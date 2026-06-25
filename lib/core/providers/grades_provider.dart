@@ -1,0 +1,259 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../models/grade.dart';
+
+part 'grades_provider.g.dart';
+
+@riverpod
+class Grades extends _$Grades {
+  @override
+  List<SubjectGrade> build() {
+    return _mockGrades;
+  }
+
+  List<SubjectGrade> getGradesForStudent(String studentId) {
+    return state.where((g) => g.studentId == studentId).toList();
+  }
+}
+
+final _mockGrades = [
+  SubjectGrade(
+    id: '1',
+    studentId: '1',
+    subjectName: 'الرياضيات',
+    iconName: 'function',
+    term1: TermGrade(
+      month1: MonthlyGrade(
+        monthName: 'الشهر الأول',
+        homework: 14,
+        attendance: 15,
+        behavior: 9,
+        oral: 8,
+        written: 43,
+      ),
+      month2: MonthlyGrade(
+        monthName: 'الشهر الثاني',
+        homework: 15,
+        attendance: 15,
+        behavior: 10,
+        oral: 9,
+        written: 47,
+      ),
+      month3: MonthlyGrade(
+        monthName: 'الشهر الثالث',
+        homework: 13,
+        attendance: 14,
+        behavior: 9,
+        oral: 9,
+        written: 42,
+      ),
+      termExam: 28,
+    ),
+    term2: TermGrade(
+      month1: MonthlyGrade(
+        monthName: 'الشهر الرابع',
+        homework: 14,
+        attendance: 15,
+        behavior: 10,
+        oral: 9,
+        written: 46,
+      ),
+      month2: MonthlyGrade(
+        monthName: 'الشهر الخامس',
+        homework: 13,
+        attendance: 15,
+        behavior: 9,
+        oral: 8,
+        written: 44,
+      ),
+      month3: MonthlyGrade(
+        monthName: 'الشهر السادس',
+        homework: 15,
+        attendance: 15,
+        behavior: 10,
+        oral: 10,
+        written: 48,
+      ),
+      termExam: 29,
+    ),
+  ),
+  SubjectGrade(
+    id: '2',
+    studentId: '1',
+    subjectName: 'العلوم',
+    iconName: 'lab_flask',
+    term1: TermGrade(
+      month1: MonthlyGrade(
+        monthName: 'الشهر الأول',
+        homework: 12,
+        attendance: 14,
+        behavior: 8,
+        oral: 7,
+        written: 38,
+      ),
+      month2: MonthlyGrade(
+        monthName: 'الشهر الثاني',
+        homework: 13,
+        attendance: 15,
+        behavior: 9,
+        oral: 8,
+        written: 42,
+      ),
+      month3: MonthlyGrade(
+        monthName: 'الشهر الثالث',
+        homework: 12,
+        attendance: 13,
+        behavior: 8,
+        oral: 8,
+        written: 40,
+      ),
+      termExam: 25,
+    ),
+    term2: TermGrade(
+      month1: MonthlyGrade(
+        monthName: 'الشهر الرابع',
+        homework: 14,
+        attendance: 15,
+        behavior: 9,
+        oral: 9,
+        written: 44,
+      ),
+      month2: MonthlyGrade(
+        monthName: 'الشهر الخامس',
+        homework: 14,
+        attendance: 15,
+        behavior: 9,
+        oral: 8,
+        written: 44,
+      ),
+      month3: MonthlyGrade(
+        monthName: 'الشهر السادس',
+        homework: 15,
+        attendance: 15,
+        behavior: 10,
+        oral: 10,
+        written: 47,
+      ),
+      termExam: 27,
+    ),
+  ),
+  SubjectGrade(
+    id: '3',
+    studentId: '1',
+    subjectName: 'اللغة العربية',
+    iconName: 'book',
+    term1: TermGrade(
+      month1: MonthlyGrade(
+        monthName: 'الشهر الأول',
+        homework: 15,
+        attendance: 15,
+        behavior: 10,
+        oral: 10,
+        written: 48,
+      ),
+      month2: MonthlyGrade(
+        monthName: 'الشهر الثاني',
+        homework: 14,
+        attendance: 15,
+        behavior: 10,
+        oral: 9,
+        written: 49,
+      ),
+      month3: MonthlyGrade(
+        monthName: 'الشهر الثالث',
+        homework: 15,
+        attendance: 15,
+        behavior: 10,
+        oral: 10,
+        written: 50,
+      ),
+      termExam: 30,
+    ),
+    term2: TermGrade(
+      month1: MonthlyGrade(
+        monthName: 'الشهر الرابع',
+        homework: 15,
+        attendance: 15,
+        behavior: 10,
+        oral: 10,
+        written: 49,
+      ),
+      month2: MonthlyGrade(
+        monthName: 'الشهر الخامس',
+        homework: 15,
+        attendance: 15,
+        behavior: 10,
+        oral: 10,
+        written: 50,
+      ),
+      month3: MonthlyGrade(
+        monthName: 'الشهر السادس',
+        homework: 14,
+        attendance: 15,
+        behavior: 9,
+        oral: 10,
+        written: 48,
+      ),
+      termExam: 29,
+    ),
+  ),
+  SubjectGrade(
+    id: '4',
+    studentId: '2',
+    subjectName: 'الرياضيات',
+    iconName: 'function',
+    term1: TermGrade(
+      month1: MonthlyGrade(
+        monthName: 'الشهر الأول',
+        homework: 11,
+        attendance: 12,
+        behavior: 7,
+        oral: 8,
+        written: 32,
+      ),
+      month2: MonthlyGrade(
+        monthName: 'الشهر الثاني',
+        homework: 13,
+        attendance: 14,
+        behavior: 9,
+        oral: 8,
+        written: 38,
+      ),
+      month3: MonthlyGrade(
+        monthName: 'الشهر الثالث',
+        homework: 14,
+        attendance: 15,
+        behavior: 9,
+        oral: 9,
+        written: 40,
+      ),
+      termExam: 20,
+    ),
+    term2: TermGrade(
+      month1: MonthlyGrade(
+        monthName: 'الشهر الرابع',
+        homework: 14,
+        attendance: 15,
+        behavior: 9,
+        oral: 8,
+        written: 44,
+      ),
+      month2: MonthlyGrade(
+        monthName: 'الشهر الخامس',
+        homework: 14,
+        attendance: 15,
+        behavior: 9,
+        oral: 8,
+        written: 44,
+      ),
+      month3: MonthlyGrade(
+        monthName: 'الشهر السادس',
+        homework: 15,
+        attendance: 15,
+        behavior: 10,
+        oral: 10,
+        written: 48,
+      ),
+      termExam: 25,
+    ),
+  ),
+];
