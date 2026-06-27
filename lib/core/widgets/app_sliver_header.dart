@@ -30,6 +30,20 @@ class AppSliverHeader extends ConsumerWidget {
     return CupertinoSliverNavigationBar(
       backgroundColor: bgColor.withValues(alpha: 0.8),
       border: null, // Removes bottom border
+      alwaysShowMiddle: false,
+      middle: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontFamily: 'GoogleSans',
+            color: textColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       largeTitle: Text(
         title,
         style: TextStyle(
@@ -75,7 +89,10 @@ class AppSliverHeader extends ConsumerWidget {
                   children: [
                     Text(
                       currentChild != null
-                          ? context.translateMock(currentChild.name).split(' ').first
+                          ? context
+                                .translateMock(currentChild.name)
+                                .split(' ')
+                                .first
                           : context.loc.selectChild,
                       style: TextStyle(
                         color: isDark ? Colors.white : const Color(0xFF062A5A),

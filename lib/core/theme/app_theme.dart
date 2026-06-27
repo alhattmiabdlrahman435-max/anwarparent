@@ -23,7 +23,7 @@ class AppTheme {
         backgroundColor: AppColors.surfaceAltLight,
         foregroundColor: AppColors.textPrimaryLight,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -101,7 +101,7 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.surfaceDark,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         iconTheme: IconThemeData(color: AppColors.textPrimaryDark),
         titleTextStyle: TextStyle(
           color: AppColors.textPrimaryDark,

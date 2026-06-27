@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/extensions/localization_extension.dart';
+import '../../../../core/providers/settings_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -28,164 +29,259 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Force dark theme colors based on the design
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? Colors.white : const Color(0xFF062A5A);
-    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+    final bgColor = isDark ? const Color(0xFF0F1522) : const Color(0xFFF8FAFC);
+    final cardColor = isDark ? const Color(0xFF1E2636) : Colors.white;
+    final fieldColor = isDark ? const Color(0xFF2C3545) : const Color(0xFFF1F5F9);
+    final primaryColor = const Color(0xFF062A5A);
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final subTextColor = isDark ? Colors.white70 : const Color(0xFF64748B);
+    
+    // Read the settings for the toggles
+    final settings = ref.watch(settingsProvider);
+    final isDarkMode = settings.themeMode == ThemeMode.dark || 
+                      (settings.themeMode == ThemeMode.system && isDark);
 
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // App Logo Placeholder
-                Center(
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF062A5A), Color(0xFF14448A)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF062A5A).withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+        child: Stack(
+          children: [
+            // Top left icons
+            Positioned(
+              top: 16,
+              left: 16,
+              child: Row(
+                children: [
+                  _buildTopIconButton(
+                    icon: CupertinoIcons.globe,
+                    isDark: isDark,
+                    onPressed: () {
+                      ref.read(settingsProvider.notifier).toggleLanguage();
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  _buildTopIconButton(
+                    icon: isDarkMode ? CupertinoIcons.sun_max : CupertinoIcons.moon,
+                    isDark: isDark,
+                    onPressed: () {
+                      ref.read(settingsProvider.notifier).toggleTheme(!isDarkMode);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Center(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // App Logo
+                    Center(
+                      child: Container(
+                        width: 110,
+                        height: 110,
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white, // White background to blend with the logo's white background
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(
+                            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black12,
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.book_solid,
-                      size: 50,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 40),
-
-                Text(
-                  context.loc.login,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    color: textColor,
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  context.loc.welcomeBack,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: subTextColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 48),
-
-                // Username Field
-                _buildTextField(
-                  label: context.loc.phoneNumberOrUsername,
-                  icon: CupertinoIcons.person_solid,
-                  isDark: isDark,
-                  primaryColor: primaryColor,
-                ),
-                const SizedBox(height: 20),
-
-                // Password Field
-                _buildTextField(
-                  label: context.loc.password,
-                  icon: CupertinoIcons.lock_fill,
-                  isDark: isDark,
-                  primaryColor: primaryColor,
-                  isPassword: true,
-                ),
-
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                      foregroundColor: isDark
-                          ? Colors.white70
-                          : const Color(0xFF062A5A),
-                    ),
-                    child: Text(
-                      context.loc.forgotPassword,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Login Button
-                SizedBox(
-                  height: 56,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF062A5A), Color(0xFF14448A)],
-                        begin: Alignment.centerRight,
-                        end: Alignment.centerLeft,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF062A5A).withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _handleLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Image.asset(
+                            'assets/icons/app_icon.jpeg',
+                            fit: BoxFit.contain, // Changed to contain to avoid squeezing
+                          ),
                         ),
                       ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
+                    ),
+                    const SizedBox(height: 24),
+
+                    Text(
+                      'رياض و مدارس انوار العلى النموذجية',
+                      style: TextStyle(
+                        fontSize: 20, // slightly smaller to fit the longer text better
+                        fontWeight: FontWeight.w900,
+                        color: textColor,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Login Card
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(32),
+                        border: Border.all(
+                          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            context.loc.login, // Instead of hardcoded, if available, otherwise welcomeBack
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: textColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            context.loc.welcomeBack,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: subTextColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 32),
+
+                          // National ID Field
+                          _buildTextField(
+                            label: context.loc.nationalId,
+                            icon: CupertinoIcons.creditcard,
+                            fillColor: fieldColor,
+                            textColor: textColor,
+                            hintColor: subTextColor,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Password Field
+                          _buildTextField(
+                            label: context.loc.password,
+                            icon: CupertinoIcons.lock_fill,
+                            fillColor: fieldColor,
+                            textColor: textColor,
+                            hintColor: subTextColor,
+                            isPassword: true,
+                            isDark: isDark,
+                          ),
+
+                          const SizedBox(height: 16),
+                          Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: TextButton(
+                              onPressed: () {},
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                foregroundColor: primaryColor,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
-                            )
-                          : Text(
-                              context.loc.login,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                              child: Text(
+                                context.loc.forgotPassword,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  color: isDark ? Colors.blueAccent[100] : primaryColor,
+                                ),
                               ),
                             ),
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Login Button
+                          SizedBox(
+                            height: 56,
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _handleLogin,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryColor,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                  : Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          context.loc.login,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Icon(Icons.arrow_forward, size: 20),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTopIconButton({
+    required IconData icon, 
+    required bool isDark,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+          width: 1,
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: isDark ? Colors.white70 : const Color(0xFF1E293B), size: 20),
+        onPressed: onPressed,
+        constraints: const BoxConstraints(),
+        padding: const EdgeInsets.all(10),
       ),
     );
   }
@@ -193,62 +289,85 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget _buildTextField({
     required String label,
     required IconData icon,
+    required Color fillColor,
+    required Color textColor,
+    required Color hintColor,
     required bool isDark,
-    required Color primaryColor,
     bool isPassword = false,
   }) {
     return TextFormField(
       obscureText: isPassword && _obscurePassword,
       style: TextStyle(
-        color: isDark ? Colors.white : const Color(0xFF1E293B),
-        fontWeight: FontWeight.w700,
+        color: textColor,
+        fontWeight: FontWeight.w600,
+        fontSize: 15,
       ),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: isDark ? Colors.white60 : const Color(0xFF64748B),
+          color: hintColor,
+          fontWeight: FontWeight.w500,
+          fontSize: 14,
+        ),
+        floatingLabelStyle: TextStyle(
+          color: isDark ? Colors.white : const Color(0xFF062A5A),
           fontWeight: FontWeight.w600,
+          fontSize: 14,
         ),
         filled: true,
-        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
-        prefixIcon: Icon(
-          icon,
-          color: isDark ? Colors.white54 : const Color(0xFF062A5A),
-          size: 22,
+        fillColor: isDark ? Colors.transparent : Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Icon(
+            icon,
+            color: hintColor,
+            size: 22,
+          ),
         ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
         suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  _obscurePassword
-                      ? CupertinoIcons.eye_slash_fill
-                      : CupertinoIcons.eye_fill,
-                  color: isDark ? Colors.white54 : Colors.grey[600],
-                  size: 20,
+            ? Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? CupertinoIcons.eye_slash_fill
+                        : CupertinoIcons.eye_fill,
+                    color: hintColor,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
                 ),
-                onPressed: () {
-                  setState(() {
-                    _obscurePassword = !_obscurePassword;
-                  });
-                },
               )
             : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: isDark
-              ? BorderSide(color: Colors.white.withValues(alpha: 0.1))
-              : BorderSide.none,
+          borderSide: BorderSide(
+            color: isDark ? Colors.white.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.12),
+            width: 1.2,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: isDark
-              ? BorderSide(color: Colors.white.withValues(alpha: 0.1))
-              : BorderSide.none,
+          borderSide: BorderSide(
+            color: isDark ? Colors.white.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.12),
+            width: 1.2,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: primaryColor, width: 1.5),
+          borderSide: BorderSide(
+            color: isDark ? Colors.white : const Color(0xFF062A5A),
+            width: 1.5,
+          ),
         ),
       ),
     );
   }
 }
+

@@ -54,8 +54,9 @@
   "reviewWithAdmin": "Please review with administration regarding the student's level.",
   "yesterday": "Yesterday",
   "login": "Login",
-  "welcomeBack": "Welcome back to Anwar Al-Ola app",
+  "welcomeBack": "Welcome back Parent",
   "phoneNumberOrUsername": "Phone Number / Username",
+  "nationalId": "National ID",
   "password": "Password",
   "forgotPassword": "Forgot Password?",
   "pleaseSelectStudent": "Please select a student",
@@ -145,5 +146,23 @@
   "childName2": "Sarah Mohammed Abdullah",
   "childGrade2": "Grade 3 - Section (B)",
   "childName3": "Omar Mohammed Abdullah",
-  "childGrade3": "Grade 1 - Section (C)"
+  "childGrade3": "Grade 1 - Section (C)",
+  "classSchedule": "Class Schedule",
+  "weeklyView": "Weekly View",
+  "dailyView": "Daily View",
+  "weekendNote": "Today is a weekend holiday",
+  "pleaseSelectChildToViewSchedule": "Please select a child to view their class schedule",
+  "period": "Period {number}",
+  "@period": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "teacher": "Teacher",
+  "islamicStudies": "Islamic Studies",
+  "physicalEducation": "Physical Education",
+  "art": "Art",
+  "freeActivity": "Free Activity"
 }

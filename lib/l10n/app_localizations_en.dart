@@ -153,10 +153,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get login => 'Login';
 
   @override
-  String get welcomeBack => 'Welcome back to Anwar Al-Ola app';
+  String get welcomeBack => 'Welcome back Parent';
 
   @override
   String get phoneNumberOrUsername => 'Phone Number / Username';
+
+  @override
+  String get nationalId => 'National ID';
 
   @override
   String get password => 'Password';
@@ -394,4 +397,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get childGrade3 => 'Grade 1 - Section (C)';
+
+  @override
+  String get classSchedule => 'Class Schedule';
+
+  @override
+  String get weeklyView => 'Weekly View';
+
+  @override
+  String get dailyView => 'Daily View';
+
+  @override
+  String get weekendNote => 'Today is a weekend holiday';
+
+  @override
+  String get pleaseSelectChildToViewSchedule =>
+      'Please select a child to view their class schedule';
+
+  @override
+  String period(int number) {
+    return 'Period $number';
+  }
+
+  @override
+  String get teacher => 'Teacher';
+
+  @override
+  String get islamicStudies => 'Islamic Studies';
+
+  @override
+  String get physicalEducation => 'Physical Education';
+
+  @override
+  String get art => 'Art';
+
+  @override
+  String get freeActivity => 'Free Activity';
 }

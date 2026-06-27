@@ -9,27 +9,10 @@ import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/providers/settings_provider.dart';
 import '../../../../core/extensions/localization_extension.dart';
 
-// Dummy pages to avoid errors
-class PrivacyPolicyPage extends StatelessWidget {
-  const PrivacyPolicyPage({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(appBar: AppBar(title: const Text('Privacy Policy')));
-}
-
-class ContactUsPage extends StatelessWidget {
-  const ContactUsPage({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(appBar: AppBar(title: const Text('Contact Us')));
-}
-
-class AboutAppPage extends StatelessWidget {
-  const AboutAppPage({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(appBar: AppBar(title: const Text('About App')));
-}
+import 'about_app_screen.dart';
+import 'privacy_policy_screen.dart';
+import 'contact_us_screen.dart';
+import '../../../profile/presentation/screens/profile_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -75,7 +58,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         title: context.loc.profile,
                         subtitle: context.loc.editProfile,
-                        onTap: () {}, // Parent Profile
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ProfileScreen(),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -178,7 +166,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const ContactUsPage(),
+                            builder: (_) => const ContactUsScreen(),
                           ),
                         ),
                       ),
@@ -190,7 +178,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const AboutAppPage(),
+                            builder: (_) => const AboutAppScreen(),
                           ),
                         ),
                       ),
@@ -203,7 +191,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const PrivacyPolicyPage(),
+                            builder: (_) => const PrivacyPolicyScreen(),
                           ),
                         ),
                       ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
-
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/settings_provider.dart';
@@ -37,6 +36,15 @@ class ParentApp extends ConsumerWidget {
         Locale('en'),
       ],
       locale: settings.locale,
+      builder: (context, child) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: child,
+        );
+      },
     );
   }
 }

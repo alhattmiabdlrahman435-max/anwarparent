@@ -80,6 +80,14 @@ extension LocalizationExtension on BuildContext {
         return loc.childGrade3;
       case 'محمد عبدالله':
         return loc.localeName == 'en' ? 'Mohammed Abdullah' : 'محمد عبدالله';
+      case 'التربية الإسلامية':
+        return loc.islamicStudies;
+      case 'التربية البدنية':
+        return loc.physicalEducation;
+      case 'الرسم الفني':
+        return loc.art;
+      case 'نشاط حر':
+        return loc.freeActivity;
       default:
         return mock;
     }

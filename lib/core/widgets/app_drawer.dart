@@ -191,6 +191,15 @@ class AppDrawer extends ConsumerWidget {
                       _navigate(context, currentRoute, '/absence_request'),
                 ),
                 _DrawerItem(
+                  title: context.loc.classSchedule,
+                  icon: CupertinoIcons.calendar_today,
+                  route: '/schedule',
+                  currentRoute: currentRoute,
+                  isDark: isDark,
+                  primaryColor: primaryColor,
+                  onTap: () => _navigate(context, currentRoute, '/schedule'),
+                ),
+                _DrawerItem(
                   title: context.loc.exams,
                   icon: CupertinoIcons.doc_text_search,
                   route: '/exams',

@@ -54,8 +54,9 @@
   "reviewWithAdmin": "نرجو مراجعة الإدارة بشأن مستوى الطالب.",
   "yesterday": "أمس",
   "login": "تسجيل الدخول",
-  "welcomeBack": "مرحباً بك مجدداً في تطبيق أنوار العلا",
+  "welcomeBack": "مرحباً بك مجدداً ولي الأمر",
   "phoneNumberOrUsername": "رقم الهاتف / اسم المستخدم",
+  "nationalId": "الرقم الوطني",
   "password": "كلمة المرور",
   "forgotPassword": "نسيت كلمة المرور؟",
   "pleaseSelectStudent": "الرجاء اختيار الطالب",
@@ -145,5 +146,23 @@
   "childName2": "سارة محمد عبدالله",
   "childGrade2": "الصف الثالث - شعبة (ب)",
   "childName3": "عمر محمد عبدالله",
-  "childGrade3": "الصف الأول - شعبة (ج)"
+  "childGrade3": "الصف الأول - شعبة (ج)",
+  "classSchedule": "جدول الحصص",
+  "weeklyView": "جدول الأسبوع",
+  "dailyView": "اليومي",
+  "weekendNote": "اليوم إجازة نهاية الأسبوع",
+  "pleaseSelectChildToViewSchedule": "الرجاء اختيار الابن لعرض جدول الحصص الخاص به",
+  "period": "الحصة {number}",
+  "@period": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "teacher": "المعلم",
+  "islamicStudies": "التربية الإسلامية",
+  "physicalEducation": "التربية البدنية",
+  "art": "الرسم الفني",
+  "freeActivity": "نشاط حر"
 }

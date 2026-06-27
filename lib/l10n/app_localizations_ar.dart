@@ -152,10 +152,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get login => 'تسجيل الدخول';
 
   @override
-  String get welcomeBack => 'مرحباً بك مجدداً في تطبيق أنوار العلا';
+  String get welcomeBack => 'مرحباً بك مجدداً ولي الأمر';
 
   @override
   String get phoneNumberOrUsername => 'رقم الهاتف / اسم المستخدم';
+
+  @override
+  String get nationalId => 'الرقم الوطني';
 
   @override
   String get password => 'كلمة المرور';
@@ -390,4 +393,40 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get childGrade3 => 'الصف الأول - شعبة (ج)';
+
+  @override
+  String get classSchedule => 'جدول الحصص';
+
+  @override
+  String get weeklyView => 'جدول الأسبوع';
+
+  @override
+  String get dailyView => 'اليومي';
+
+  @override
+  String get weekendNote => 'اليوم إجازة نهاية الأسبوع';
+
+  @override
+  String get pleaseSelectChildToViewSchedule =>
+      'الرجاء اختيار الابن لعرض جدول الحصص الخاص به';
+
+  @override
+  String period(int number) {
+    return 'الحصة $number';
+  }
+
+  @override
+  String get teacher => 'المعلم';
+
+  @override
+  String get islamicStudies => 'التربية الإسلامية';
+
+  @override
+  String get physicalEducation => 'التربية البدنية';
+
+  @override
+  String get art => 'الرسم الفني';
+
+  @override
+  String get freeActivity => 'نشاط حر';
 }

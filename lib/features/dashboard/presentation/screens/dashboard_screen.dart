@@ -419,6 +419,26 @@ class _QuickActions extends StatelessWidget {
           children: [
             Expanded(
               child: _QuickActionButton(
+                icon: Icons.quiz_rounded,
+                label: context.loc.exams,
+                color: Colors.purple,
+                isDark: isDark,
+                onTap: () => context.push('/exams'),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _QuickActionButton(
+                icon: Icons.schedule_rounded,
+                label: context.loc.classSchedule,
+                color: Colors.indigo,
+                isDark: isDark,
+                onTap: () => context.push('/schedule'),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _QuickActionButton(
                 icon: Icons.attach_money_rounded,
                 label: context.loc.fees,
                 color: Colors.blue,
@@ -426,7 +446,11 @@ class _QuickActions extends StatelessWidget {
                 onTap: () => context.push('/fees'),
               ),
             ),
-            const SizedBox(width: 16),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
             Expanded(
               child: _QuickActionButton(
                 icon: Icons.notifications_active_rounded,

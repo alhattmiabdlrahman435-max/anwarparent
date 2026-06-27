@@ -12,6 +12,7 @@ import '../../features/fees/presentation/screens/fees_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/exams/presentation/screens/exams_screen.dart';
+import '../../features/schedule/presentation/screens/schedule_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -52,6 +53,10 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(path: '/exams', builder: (context, state) => const ExamsScreen()),
+      GoRoute(
+        path: '/schedule',
+        builder: (context, state) => const ScheduleScreen(),
+      ),
     ],
   );
 }

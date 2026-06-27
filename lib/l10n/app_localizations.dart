@@ -383,7 +383,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeBack.
   ///
   /// In ar, this message translates to:
-  /// **'مرحباً بك مجدداً في تطبيق أنوار العلا'**
+  /// **'مرحباً بك مجدداً ولي الأمر'**
   String get welcomeBack;
 
   /// No description provided for @phoneNumberOrUsername.
@@ -391,6 +391,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'رقم الهاتف / اسم المستخدم'**
   String get phoneNumberOrUsername;
+
+  /// No description provided for @nationalId.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرقم الوطني'**
+  String get nationalId;
 
   /// No description provided for @password.
   ///
@@ -847,6 +853,72 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'الصف الأول - شعبة (ج)'**
   String get childGrade3;
+
+  /// No description provided for @classSchedule.
+  ///
+  /// In ar, this message translates to:
+  /// **'جدول الحصص'**
+  String get classSchedule;
+
+  /// No description provided for @weeklyView.
+  ///
+  /// In ar, this message translates to:
+  /// **'جدول الأسبوع'**
+  String get weeklyView;
+
+  /// No description provided for @dailyView.
+  ///
+  /// In ar, this message translates to:
+  /// **'اليومي'**
+  String get dailyView;
+
+  /// No description provided for @weekendNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم إجازة نهاية الأسبوع'**
+  String get weekendNote;
+
+  /// No description provided for @pleaseSelectChildToViewSchedule.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرجاء اختيار الابن لعرض جدول الحصص الخاص به'**
+  String get pleaseSelectChildToViewSchedule;
+
+  /// No description provided for @period.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحصة {number}'**
+  String period(int number);
+
+  /// No description provided for @teacher.
+  ///
+  /// In ar, this message translates to:
+  /// **'المعلم'**
+  String get teacher;
+
+  /// No description provided for @islamicStudies.
+  ///
+  /// In ar, this message translates to:
+  /// **'التربية الإسلامية'**
+  String get islamicStudies;
+
+  /// No description provided for @physicalEducation.
+  ///
+  /// In ar, this message translates to:
+  /// **'التربية البدنية'**
+  String get physicalEducation;
+
+  /// No description provided for @art.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرسم الفني'**
+  String get art;
+
+  /// No description provided for @freeActivity.
+  ///
+  /// In ar, this message translates to:
+  /// **'نشاط حر'**
+  String get freeActivity;
 }
 
 class _AppLocalizationsDelegate

@@ -46,6 +46,7 @@ dependencies:
   table_calendar: ^3.2.0
   flutter_localizations:
     sdk: flutter
+  image_picker: ^1.2.2
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +63,7 @@ dev_dependencies:
   json_serializable: ^6.13.0
   riverpod_generator: ^4.0.3
   flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -18,6 +18,20 @@ class AdaptiveSliverAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoSliverNavigationBar(
+      alwaysShowMiddle: false,
+      middle: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontFamily: 'GoogleSans',
+            color: AppColors.textPrimaryLight,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       largeTitle: Text(
         title,
         style: const TextStyle(height: 1.0, color: AppColors.textPrimaryLight),
