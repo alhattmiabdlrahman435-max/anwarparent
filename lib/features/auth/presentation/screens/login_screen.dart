@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/extensions/localization_extension.dart';
 import '../../../../core/providers/settings_provider.dart';
+import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -19,11 +20,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _handleLogin() async {
     setState(() => _isLoading = true);
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 1000));
+    
+    // Use the auth provider for simulated secure login
+    await ref.read(authProvider.notifier).login('username', 'password');
+    
     if (mounted) {
       setState(() => _isLoading = false);
-      context.go('/dashboard');
+      
+      final authState = ref.read(authProvider);
+      if (!authState.hasError) {
+        context.go('/dashboard');
+      } else {
+        // Handle error (e.g., show snackbar)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('حدث خطأ في تسجيل الدخول')),
+        );
+      }
     }
   }
 
