@@ -202,7 +202,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   // Logout Button
                   SizedBox(
                     width: double.infinity,
-                    child: FilledButton.icon(
+                    child: FilledButton(
                       onPressed: () {
                         showDialog(
                           context: context,
@@ -233,19 +233,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.error.withValues(alpha: 0.1),
                         foregroundColor: AppColors.error,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                         elevation: 0,
                       ),
-                      icon: const Icon(Icons.logout_rounded),
-                      label: Text(
-                        context.loc.logout,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ).copyWith(inherit: false),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.diagonal3Values(
+                              Directionality.of(context) == TextDirection.rtl ? -1.0 : 1.0,
+                              1.0,
+                              1.0,
+                            ),
+                            child: const Icon(Icons.logout_rounded, size: 22),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            context.loc.logout,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
