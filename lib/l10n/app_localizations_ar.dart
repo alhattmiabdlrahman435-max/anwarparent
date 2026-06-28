@@ -444,4 +444,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get freeActivity => 'نشاط حر';
+
+  @override
+  String get subject => 'المادة';
+
+  @override
+  String get date => 'التاريخ';
+
+  @override
+  String get time => 'الوقت';
+
+  @override
+  String get syllabusNote => 'المقرر/الملاحظة';
 }

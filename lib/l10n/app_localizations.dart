@@ -949,6 +949,30 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'نشاط حر'**
   String get freeActivity;
+
+  /// No description provided for @subject.
+  ///
+  /// In ar, this message translates to:
+  /// **'المادة'**
+  String get subject;
+
+  /// No description provided for @date.
+  ///
+  /// In ar, this message translates to:
+  /// **'التاريخ'**
+  String get date;
+
+  /// No description provided for @time.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوقت'**
+  String get time;
+
+  /// No description provided for @syllabusNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'المقرر/الملاحظة'**
+  String get syllabusNote;
 }
 
 class _AppLocalizationsDelegate

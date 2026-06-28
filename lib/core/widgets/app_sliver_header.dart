@@ -28,7 +28,6 @@ class AppSliverHeader extends ConsumerWidget {
     final currentChild = ref.watch(currentChildProvider);
     final children = ref.watch(childrenProvider);
 
-    final platform = Theme.of(context).platform;
 
     Widget header = CupertinoSliverNavigationBar(
       backgroundColor: bgColor.withValues(alpha: 0.8),
@@ -122,14 +121,6 @@ class AppSliverHeader extends ConsumerWidget {
         ],
       ),
     );
-
-    if (platform == TargetPlatform.android) {
-      header = SliverSafeArea(
-        top: true,
-        bottom: false,
-        sliver: header,
-      );
-    }
 
     return header;
   }

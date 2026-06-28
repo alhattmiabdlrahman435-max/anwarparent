@@ -12,11 +12,13 @@ class MockExams {
             ExamSubject(
               subjectName: 'القرآن الكريم',
               date: DateTime.now().add(const Duration(days: 2)),
+              time: '08:00 ص - 09:30 ص',
               note: 'تسميع سورة البقرة من آية 1 إلى 50',
             ),
             ExamSubject(
               subjectName: 'الرياضيات',
               date: DateTime.now().add(const Duration(days: 3)),
+              time: '08:00 ص - 10:00 ص',
               note: 'الباب الأول فقط',
             ),
           ],
@@ -30,11 +32,13 @@ class MockExams {
             ExamSubject(
               subjectName: 'اللغة العربية',
               date: DateTime.now().add(const Duration(days: 30)),
+              time: '08:00 ص - 10:00 ص',
               note: 'النصوص والقواعد النحوية',
             ),
             ExamSubject(
               subjectName: 'العلوم',
               date: DateTime.now().add(const Duration(days: 31)),
+              time: '08:00 ص - 09:30 ص',
               note: 'الوحدة الثانية',
             ),
           ],
@@ -48,6 +52,7 @@ class MockExams {
             ExamSubject(
               subjectName: 'الاجتماعيات',
               date: DateTime.now().add(const Duration(days: 60)),
+              time: '08:00 ص - 09:30 ص',
               note: 'الجغرافيا والتاريخ',
             ),
           ],
@@ -61,11 +66,13 @@ class MockExams {
             ExamSubject(
               subjectName: 'الرياضيات',
               date: DateTime.now().add(const Duration(days: 90)),
+              time: '08:00 ص - 10:00 ص',
               note: 'شامل كامل الكتاب',
             ),
             ExamSubject(
               subjectName: 'اللغة الإنجليزية',
               date: DateTime.now().add(const Duration(days: 91)),
+              time: '08:00 ص - 10:00 ص',
               note: 'شامل',
             ),
           ],
@@ -81,6 +88,7 @@ class MockExams {
             ExamSubject(
               subjectName: 'القرآن الكريم',
               date: DateTime.now().add(const Duration(days: 120)),
+              time: '08:00 ص - 09:30 ص',
               note: 'تسميع سورة البقرة من 50 إلى 100',
             ),
           ],

@@ -36,11 +36,13 @@ class ExamSchedule {
 class ExamSubject {
   final String subjectName;
   final DateTime date;
+  final String time;
   final String note;
 
   const ExamSubject({
     required this.subjectName,
     required this.date,
+    required this.time,
     required this.note,
   });
 }

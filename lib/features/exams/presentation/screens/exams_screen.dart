@@ -21,6 +21,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   ExamPeriod _selectedPeriod = ExamPeriod.month1;
+  bool _isGridView = false;
 
   @override
   void initState() {
@@ -43,6 +44,8 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+    final cardBgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final primaryColor = isDark ? Colors.white : const Color(0xFF062A5A);
     final unselectedColor = isDark ? Colors.white54 : const Color(0xFF64748B);
 
@@ -75,6 +78,18 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
           AppSliverHeader(
             title: context.loc.exams,
             showChildSwitcher: true,
+            trailing: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                setState(() {
+                  _isGridView = !_isGridView;
+                });
+              },
+              child: Icon(
+                _isGridView ? CupertinoIcons.list_bullet : CupertinoIcons.grid,
+                color: isDark ? Colors.white : const Color(0xFF062A5A),
+              ),
+            ),
           ),
           if (currentChild == null)
             SliverFillRemaining(
@@ -209,51 +224,157 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
             ),
 
             // Exams Content
-            SliverPadding(
-              padding: const EdgeInsets.only(top: 16),
-              sliver: currentSchedule.isEmpty
-                  ? SliverFillRemaining(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              CupertinoIcons.doc_text_search,
-                              size: 64,
-                              color: isDark ? Colors.white24 : Colors.grey[300],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              context.loc.noScheduleAddedFor(context.translateMock(_selectedPeriod.displayName)),
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: isDark
-                                    ? Colors.white60
-                                    : Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+            if (currentSchedule.isEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.only(top: 16),
+                sliver: SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          CupertinoIcons.doc_text_search,
+                          size: 64,
+                          color: isDark ? Colors.white24 : Colors.grey[300],
                         ),
-                      ),
-                    )
-                  : SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final schedule = currentSchedule.first;
-                          final subject = schedule.subjects[index];
-                          return _buildExamSubjectCard(
-                            subject,
-                            isDark,
-                            primaryColor,
-                          );
-                        },
-                        childCount: currentSchedule.isNotEmpty
-                            ? currentSchedule.first.subjects.length
-                            : 0,
+                        const SizedBox(height: 16),
+                        Text(
+                          context.loc.noScheduleAddedFor(context.translateMock(_selectedPeriod.displayName)),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: isDark
+                                ? Colors.white60
+                                : Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else if (_isGridView)
+              SliverPadding(
+                padding: const EdgeInsets.all(20.0),
+                sliver: SliverToBoxAdapter(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: cardBgColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1),
                       ),
                     ),
-            ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: DataTable(
+                          columnSpacing: 24,
+                          headingRowColor: WidgetStateProperty.all(
+                            isDark ? const Color(0xFF0F172A) : const Color(0xFF062A5A).withValues(alpha: 0.05),
+                          ),
+                          dataRowColor: WidgetStateProperty.all(cardBgColor),
+                          headingTextStyle: TextStyle(
+                            fontFamily: 'GoogleSans',
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                            fontSize: 14,
+                          ),
+                          dataTextStyle: TextStyle(
+                            fontFamily: 'GoogleSans',
+                            color: textColor,
+                            fontSize: 13,
+                          ),
+                          border: TableBorder(
+                            horizontalInside: BorderSide(
+                              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1),
+                              width: 1,
+                            ),
+                            verticalInside: BorderSide(
+                              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1),
+                              width: 1,
+                            ),
+                          ),
+                          columns: [
+                            DataColumn(label: Text(context.loc.subject)),
+                            DataColumn(label: Text(context.loc.date)),
+                            DataColumn(label: Text(context.loc.time)),
+                            DataColumn(label: Text(context.loc.syllabusNote)),
+                          ],
+                          rows: currentSchedule.first.subjects.map((subject) {
+                            final formattedDate = DateFormat(
+                              'EEEE, dd MMM',
+                              Localizations.localeOf(context).languageCode,
+                            ).format(subject.date);
+
+                            return DataRow(
+                              cells: [
+                                DataCell(
+                                  Text(
+                                    context.translateMock(subject.subjectName),
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(formattedDate),
+                                ),
+                                DataCell(
+                                  Text(
+                                    context.translateMock(subject.time),
+                                    style: TextStyle(
+                                      color: isDark ? Colors.teal.shade300 : const Color(0xFF0D9488),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  Container(
+                                    constraints: const BoxConstraints(maxWidth: 250),
+                                    child: Text(
+                                      context.translateMock(subject.note),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.only(top: 16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final schedule = currentSchedule.first;
+                      final subject = schedule.subjects[index];
+                      return _buildExamSubjectCard(
+                        subject,
+                        isDark,
+                        primaryColor,
+                      );
+                    },
+                    childCount: currentSchedule.isNotEmpty
+                        ? currentSchedule.first.subjects.length
+                        : 0,
+                  ),
+                ),
+              ),
           ],
         ],
       ),
@@ -397,7 +518,26 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
                     color: textColor,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      CupertinoIcons.clock,
+                      size: 14,
+                      color: isDark ? Colors.teal.shade300 : const Color(0xFF0D9488),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      context.translateMock(subject.time),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? Colors.teal.shade300 : const Color(0xFF0D9488),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

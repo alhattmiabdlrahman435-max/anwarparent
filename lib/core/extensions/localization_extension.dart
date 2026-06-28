@@ -88,6 +88,10 @@ extension LocalizationExtension on BuildContext {
         return loc.art;
       case 'نشاط حر':
         return loc.freeActivity;
+      case '08:00 ص - 09:30 ص':
+        return loc.localeName == 'en' ? '08:00 AM - 09:30 AM' : '08:00 ص - 09:30 ص';
+      case '08:00 ص - 10:00 ص':
+        return loc.localeName == 'en' ? '08:00 AM - 10:00 AM' : '08:00 ص - 10:00 ص';
       default:
         return mock;
     }
