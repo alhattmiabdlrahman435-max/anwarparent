@@ -24,6 +24,7 @@
   "parentAccount": "Parent Account",
   "quickAccess": "Quick Access",
   "absenceRequest": "Absence Request",
+  "absenceRequestsHistory": "Absence History",
   "gradesAndAnalytics": "Grades & Analytics",
   "schoolAssignments": "School Assignments",
   "attendanceRecord": "Attendance Record",

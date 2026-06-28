@@ -200,6 +200,12 @@ abstract class AppLocalizations {
   /// **'طلب غياب'**
   String get absenceRequest;
 
+  /// No description provided for @absenceRequestsHistory.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجل طلبات الغياب'**
+  String get absenceRequestsHistory;
+
   /// No description provided for @gradesAndAnalytics.
   ///
   /// In ar, this message translates to:

@@ -465,6 +465,16 @@ class _QuickActions extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: _QuickActionButton(
+                icon: Icons.assignment_turned_in_rounded,
+                label: context.loc.absenceRequestsHistory,
+                color: Colors.green,
+                isDark: isDark,
+                onTap: () => context.push('/absence_history'),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _QuickActionButton(
                 icon: Icons.settings_rounded,
                 label: context.loc.settings,
                 color: Colors.grey,

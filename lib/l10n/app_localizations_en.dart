@@ -62,6 +62,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get absenceRequest => 'Absence Request';
 
   @override
+  String get absenceRequestsHistory => 'Absence History';
+
+  @override
   String get gradesAndAnalytics => 'Grades & Analytics';
 
   @override

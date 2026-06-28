@@ -8,6 +8,7 @@ import '../../features/assignments/presentation/screens/assignments_screen.dart'
 import '../../features/grades/presentation/screens/grades_screen.dart';
 import '../../features/attendance/presentation/screens/attendance_screen.dart';
 import '../../features/attendance/presentation/screens/absence_request_screen.dart';
+import '../../features/attendance/presentation/screens/absence_history_screen.dart';
 import '../../features/fees/presentation/screens/fees_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
@@ -42,6 +43,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/absence_request',
         builder: (context, state) => const AbsenceRequestScreen(),
+      ),
+      GoRoute(
+        path: '/absence_history',
+        builder: (context, state) => const AbsenceHistoryScreen(),
       ),
       GoRoute(path: '/fees', builder: (context, state) => const FeesScreen()),
       GoRoute(

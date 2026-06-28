@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/providers/children_provider.dart';
 import '../../../../core/models/student.dart';
+import '../../../../core/models/absence_request.dart';
+import '../../../../core/providers/absence_requests_provider.dart';
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/extensions/localization_extension.dart';
@@ -41,6 +43,18 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
       await Future.delayed(const Duration(seconds: 1));
 
       if (!mounted) return;
+
+      final student = ref.read(childrenProvider).firstWhere((s) => s.id == selectedStudentId);
+      final newRequest = AbsenceRequest(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        studentId: selectedStudentId!,
+        studentName: student.name,
+        date: selectedDate ?? DateTime.now(),
+        duration: context.loc.language == 'ar' ? 'يوم كامل' : 'Full Day',
+        reason: _reasonController.text,
+        status: AbsenceRequestStatus.pending,
+      );
+      ref.read(absenceRequestsProvider.notifier).addRequest(newRequest);
 
       _showSuccessSnackBar(context.loc.absenceRequestSentSuccessfully);
       await Future.delayed(const Duration(milliseconds: 1000));

@@ -17,7 +17,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Request permissions and print FCM Token
+  // Request permissions and print FCM Token asynchronously (non-blocking)
+  _setupFirebaseMessaging();
+
+  runApp(const ProviderScope(child: ParentApp()));
+}
+
+Future<void> _setupFirebaseMessaging() async {
   try {
     await FirebaseMessaging.instance.requestPermission(
       alert: true,
@@ -62,8 +68,6 @@ void main() async {
   } catch (e) {
     debugPrint('Error getting FCM token: $e');
   }
-
-  runApp(const ProviderScope(child: ParentApp()));
 }
 
 class ParentApp extends ConsumerWidget {
@@ -93,9 +97,8 @@ class ParentApp extends ConsumerWidget {
       ],
       locale: settings.locale,
       builder: (context, child) {
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
+        return Listener(
+          onPointerDown: (_) {
             FocusManager.instance.primaryFocus?.unfocus();
           },
           child: child,
