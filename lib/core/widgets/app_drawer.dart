@@ -35,9 +35,11 @@ class AppDrawer extends ConsumerWidget {
         children: [
           // ---------------- HEADER ----------------
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 40 + 10,
+            padding: const EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 12,
+              bottom: 16,
             ),
             // Unified Background: No gradient, matches drawerBg
             decoration: BoxDecoration(
@@ -142,7 +144,7 @@ class AppDrawer extends ConsumerWidget {
           // ---------------- MENU ----------------
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              padding: const EdgeInsets.only(top: 8, bottom: 24, left: 16, right: 16),
               children: [
                 _DrawerItem(
                   title: context.loc.home,
@@ -367,20 +369,20 @@ class _DrawerItem extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(
-        bottom: 4,
-      ), // Tighter spacing for "Simple" look
+        bottom: 10,
+      ),
       child: Material(
         color: Colors.transparent,
         child: ListTile(
           onTap: onTap,
-          dense: true, // Compact
+          dense: false, // Make items taller and more premium
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12), // Slightly smaller radius
+            borderRadius: BorderRadius.circular(14),
           ),
           tileColor: backgroundColor,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 2, // Minimal vertical padding
+            vertical: 4, // Increased padding
           ),
           minLeadingWidth: 24, // Tighter icon-text gap
           leading: Icon(
