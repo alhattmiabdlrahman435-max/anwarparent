@@ -44,27 +44,33 @@ Future<void> _setupFirebaseMessaging() async {
     });
 
     // On iOS, we must ensure APNS token is received before getting FCM token
+    String? apnsToken;
     if (defaultTargetPlatform == TargetPlatform.iOS) {
-      debugPrint('iOS detected: Waiting for APNS token...');
-      String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-      int retries = 0;
-      while (apnsToken == null && retries < 10) {
-        await Future.delayed(const Duration(seconds: 1));
-        apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-        retries++;
-        debugPrint('Waiting for APNS token... (retry $retries/10)');
-      }
-      if (apnsToken == null) {
-        debugPrint('WARNING: APNS token is null. Push Notifications capability might be missing in Xcode, or APNs credentials not configured in Firebase Console.');
+      apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+      
+      // On iOS simulators or debug configurations, the APNS token is always null.
+      // We skip the 10-second retry loop in debug mode to make startup clean and fast.
+      if (apnsToken == null && !kReleaseMode) {
+        debugPrint('iOS Simulator/Debug detected: APNS token is null (Push Notifications are only supported on physical iOS devices).');
       } else {
-        debugPrint('APNS token received: $apnsToken');
+        int retries = 0;
+        while (apnsToken == null && retries < 5) {
+          await Future.delayed(const Duration(seconds: 1));
+          apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+          retries++;
+        }
       }
     }
 
-    String? token = await FirebaseMessaging.instance.getToken();
-    debugPrint('================= FCM TOKEN =================');
-    debugPrint(token);
-    debugPrint('=============================================');
+    // Only attempt to get FCM token if we are not on iOS, or if we are on iOS and APNS token is available
+    if (defaultTargetPlatform == TargetPlatform.iOS && apnsToken == null) {
+      debugPrint('Skipped FCM token registration: APNS token is not available.');
+    } else {
+      String? token = await FirebaseMessaging.instance.getToken();
+      debugPrint('================= FCM TOKEN =================');
+      debugPrint(token);
+      debugPrint('=============================================');
+    }
   } catch (e) {
     debugPrint('Error getting FCM token: $e');
   }
