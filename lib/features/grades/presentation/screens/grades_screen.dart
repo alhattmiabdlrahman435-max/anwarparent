@@ -41,7 +41,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
     List<SubjectGrade> subjects = [];
     if (currentChild != null) {
       subjects = ref
-          .read(gradesProvider.notifier)
+          .watch(gradesProvider.notifier)
           .getGradesForStudent(currentChild.id);
     }
 

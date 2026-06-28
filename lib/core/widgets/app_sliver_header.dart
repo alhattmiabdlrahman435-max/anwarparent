@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/children_provider.dart';
+import '../models/student.dart';
 import '../extensions/localization_extension.dart';
 
 class AppSliverHeader extends ConsumerWidget {

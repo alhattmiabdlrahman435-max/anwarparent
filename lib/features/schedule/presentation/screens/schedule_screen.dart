@@ -129,7 +129,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
 
     if (currentChild != null) {
       schedule = ref
-          .read(classSchedulesProvider.notifier)
+          .watch(classSchedulesProvider.notifier)
           .getScheduleForStudent(currentChild.id);
     }
 

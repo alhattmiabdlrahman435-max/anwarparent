@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/extensions/localization_extension.dart';
 
@@ -16,6 +17,32 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   final _messageController = TextEditingController();
   String _selectedType = 'inquiry'; // 'inquiry', 'complaint', 'suggestion'
   bool _isSubmitting = false;
+
+  Future<void> _launchUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    try {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تعذر فتح الرابط')),
+        );
+      }
+    }
+  }
+
+  Future<void> _makeCall(String phoneNumber) async {
+    final Uri url = Uri(scheme: 'tel', path: phoneNumber);
+    try {
+      await launchUrl(url);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تعذر إجراء المكالمة')),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -105,10 +132,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-
-            // Contact Channels Card
+            _buildSectionTitle('أرقام التواصل والاستفسار', isDark),
+            const SizedBox(height: 8),
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: cardColor,
                 borderRadius: BorderRadius.circular(24),
@@ -119,39 +146,112 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               child: Column(
                 children: [
                   _buildContactRow(
-                    icon: Icons.phone_rounded,
-                    title: 'رقم الهاتف الإدارة',
-                    value: '+967 1 123456',
+                    icon: Icons.school_rounded,
+                    title: 'مبنى البنين (اتصال مباشر)',
+                    value: '03 266118',
                     textColor: textColor,
                     subTextColor: subTextColor,
                     isDark: isDark,
+                    isLtr: true,
+                    onTap: () => _makeCall('03266118'),
                   ),
-                  const Divider(height: 24, thickness: 0.5),
+                  const Divider(height: 20, thickness: 0.5),
                   _buildContactRow(
-                    icon: Icons.phone_android_rounded,
-                    title: 'موبايل / واتساب',
-                    value: '+967 777 777 777',
+                    icon: Icons.school_rounded,
+                    title: 'مبنى البنات (اتصال مباشر)',
+                    value: '03 266117',
                     textColor: textColor,
                     subTextColor: subTextColor,
                     isDark: isDark,
+                    isLtr: true,
+                    onTap: () => _makeCall('03266117'),
                   ),
-                  const Divider(height: 24, thickness: 0.5),
-                  _buildContactRow(
-                    icon: Icons.email_rounded,
-                    title: 'البريد الإلكتروني',
-                    value: 'info@anwar-alola.edu.ye',
-                    textColor: textColor,
-                    subTextColor: subTextColor,
-                    isDark: isDark,
-                  ),
-                  const Divider(height: 24, thickness: 0.5),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Locations Card
+            _buildSectionTitle('مواقع فروعنا الجغرافية', isDark),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isDark ? Colors.white10 : AppColors.border,
+                ),
+              ),
+              child: Column(
+                children: [
                   _buildContactRow(
                     icon: Icons.location_on_rounded,
-                    title: 'الموقع الجغرافي',
-                    value: 'صنعاء، اليمن',
+                    title: 'مبنى البنين',
+                    value: 'شارع الشهداء، تقاطع الأربعين، بجوار كلية المجتمع.',
                     textColor: textColor,
                     subTextColor: subTextColor,
                     isDark: isDark,
+                  ),
+                  const Divider(height: 20, thickness: 0.5),
+                  _buildContactRow(
+                    icon: Icons.location_on_rounded,
+                    title: 'مبنى البنات',
+                    value: 'شارع 7 يوليو.',
+                    textColor: textColor,
+                    subTextColor: subTextColor,
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Social Media & Channels Card
+            _buildSectionTitle('تابعونا واشتركوا في منصاتنا', isDark),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isDark ? Colors.white10 : AppColors.border,
+                ),
+              ),
+              child: Column(
+                children: [
+                  _buildContactRow(
+                    icon: Icons.chat_rounded,
+                    title: 'قناة الواتساب الرسمية',
+                    value: 'انقر هنا للاشتراك ومتابعة الأخبار',
+                    textColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
+                    subTextColor: subTextColor,
+                    isDark: isDark,
+                    onTap: () => _launchUrl('https://whatsapp.com/channel/0029Vaiuwh5CBtx6Zj172p1M'),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+                  ),
+                  const Divider(height: 20, thickness: 0.5),
+                  _buildContactRow(
+                    icon: Icons.facebook_rounded,
+                    title: 'صفحة فيسبوك الرسمية',
+                    value: 'انقر هنا لزيارة الصفحة الرسمية للمدارس',
+                    textColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
+                    subTextColor: subTextColor,
+                    isDark: isDark,
+                    onTap: () => _launchUrl('https://www.facebook.com/ANWARALOLA'),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+                  ),
+                  const Divider(height: 20, thickness: 0.5),
+                  _buildContactRow(
+                    icon: Icons.telegram_rounded,
+                    title: 'قناة التلجرام',
+                    value: 'انقر هنا للانضمام إلى القناة التفاعلية',
+                    textColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
+                    subTextColor: subTextColor,
+                    isDark: isDark,
+                    onTap: () => _launchUrl('https://t.me/+RZemwA4uzvt76hc_'),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
                   ),
                 ],
               ),
@@ -275,8 +375,11 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     required Color textColor,
     required Color subTextColor,
     required bool isDark,
+    bool isLtr = false,
+    VoidCallback? onTap,
+    Widget? trailing,
   }) {
-    return Row(
+    final rowContent = Row(
       children: [
         Container(
           padding: const EdgeInsets.all(10),
@@ -301,23 +404,60 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   fontSize: 12,
                   color: subTextColor,
                   fontWeight: FontWeight.w500,
+                  fontFamily: 'GoogleSans',
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 2.5),
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: textColor,
+                  fontFamily: 'GoogleSans',
                 ),
-                textDirection: TextDirection.ltr,
-                textAlign: TextAlign.right,
+                textDirection: isLtr ? TextDirection.ltr : null,
               ),
             ],
           ),
         ),
+        // ignore: use_null_aware_elements
+        if (trailing != null) trailing,
       ],
+    );
+
+    if (onTap != null) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+            child: rowContent,
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      child: rowContent,
+    );
+  }
+
+  Widget _buildSectionTitle(String title, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: isDark ? AppColors.accent : AppColors.primary,
+          fontFamily: 'GoogleSans',
+        ),
+      ),
     );
   }
 

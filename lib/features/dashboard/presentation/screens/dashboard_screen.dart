@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/providers/children_provider.dart';
+import '../../../../core/models/student.dart';
 import '../../../../core/providers/parent_provider.dart';
 import '../../../../core/extensions/localization_extension.dart';
 

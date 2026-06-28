@@ -3,15 +3,24 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class Auth extends _$Auth {
   final _storage = const FlutterSecureStorage();
   static const _tokenKey = 'auth_token';
 
   @override
   FutureOr<bool> build() async {
-    final token = await _storage.read(key: _tokenKey);
-    return token != null && token.isNotEmpty;
+    try {
+      final token = await _storage.read(key: _tokenKey);
+      return token != null && token.isNotEmpty;
+    } catch (e) {
+      // In case of Keystore corruption or platform-specific secure storage read failure,
+      // clear the storage and return false (logged out).
+      try {
+        await _storage.deleteAll();
+      } catch (_) {}
+      return false;
+    }
   }
 
   Future<void> login(String username, String password) async {
@@ -41,6 +50,10 @@ class Auth extends _$Auth {
   }
 
   Future<String?> getToken() async {
-    return await _storage.read(key: _tokenKey);
+    try {
+      return await _storage.read(key: _tokenKey);
+    } catch (_) {
+      return null;
+    }
   }
 }

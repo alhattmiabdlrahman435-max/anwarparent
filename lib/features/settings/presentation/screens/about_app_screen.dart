@@ -169,7 +169,53 @@ class AboutAppScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
+            // Developer info
+            Text(
+              'تم التطوير بواسطة',
+              style: TextStyle(
+                fontSize: 12,
+                color: subTextColor.withValues(alpha: 0.7),
+                fontFamily: 'GoogleSans',
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Silicon Apex (SA)',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
+                      fontFamily: 'GoogleSans',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '< >',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
+                      fontFamily: 'GoogleSans',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
             // Footer text
             Text(
               'جميع الحقوق محفوظة © رياض ومدارس أنوار العُلى',

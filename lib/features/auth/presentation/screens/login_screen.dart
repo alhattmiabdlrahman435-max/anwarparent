@@ -16,17 +16,12 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscurePassword = true;
-  bool _isLoading = false;
 
   void _handleLogin() async {
-    setState(() => _isLoading = true);
-    
     // Use the auth provider for simulated secure login
     await ref.read(authProvider.notifier).login('username', 'password');
     
     if (mounted) {
-      setState(() => _isLoading = false);
-      
       final authState = ref.read(authProvider);
       if (!authState.hasError) {
         context.go('/dashboard');
@@ -50,8 +45,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final subTextColor = isDark ? Colors.white70 : const Color(0xFF64748B);
     
-    // Read the settings for the toggles
     final settings = ref.watch(settingsProvider);
+    final authState = ref.watch(authProvider);
+    final isLoading = authState.isLoading;
     final isDarkMode = settings.themeMode == ThemeMode.dark || 
                       (settings.themeMode == ThemeMode.system && isDark);
 
@@ -228,7 +224,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             height: 56,
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleLogin,
+                              onPressed: isLoading ? null : _handleLogin,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryColor,
                                 foregroundColor: Colors.white,
@@ -237,7 +233,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
-                              child: _isLoading
+                              child: isLoading
                                   ? const SizedBox(
                                       width: 24,
                                       height: 24,

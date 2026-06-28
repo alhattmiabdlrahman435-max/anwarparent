@@ -51,7 +51,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
     List<ExamSchedule> studentExams = [];
     if (currentChild != null) {
       studentExams = ref
-          .read(examsProvider.notifier)
+          .watch(examsProvider.notifier)
           .getExamsForStudent(currentChild.id);
     }
 

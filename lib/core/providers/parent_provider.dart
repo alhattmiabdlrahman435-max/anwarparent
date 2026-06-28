@@ -1,20 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../models/parent_profile.dart';
 
 part 'parent_provider.g.dart';
-
-class ParentProfile {
-  final String id;
-  final String name;
-  final String phoneNumber;
-  final String? avatarUrl;
-
-  ParentProfile({
-    required this.id,
-    required this.name,
-    required this.phoneNumber,
-    this.avatarUrl,
-  });
-}
 
 @riverpod
 ParentProfile currentParent(Ref ref) {
