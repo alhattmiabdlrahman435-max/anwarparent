@@ -369,20 +369,20 @@ class _DrawerItem extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(
-        bottom: 10,
-      ),
+        bottom: 4,
+      ), // Tighter spacing for "Simple" look
       child: Material(
         color: Colors.transparent,
         child: ListTile(
           onTap: onTap,
-          dense: false, // Make items taller and more premium
+          dense: true, // Compact
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12), // Slightly smaller radius
           ),
           tileColor: backgroundColor,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 4, // Increased padding
+            vertical: 2, // Minimal vertical padding
           ),
           minLeadingWidth: 24, // Tighter icon-text gap
           leading: Icon(
