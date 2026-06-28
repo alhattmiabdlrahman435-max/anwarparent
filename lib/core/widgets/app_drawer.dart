@@ -252,12 +252,11 @@ class AppDrawer extends ConsumerWidget {
             ),
           ),
 
-          // ---------------- LOGOUT ----------------
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: SafeArea(
               top: false,
-              child: TextButton.icon(
+              child: TextButton(
                 onPressed: () {
                   showDialog(
                     context: context,
@@ -286,7 +285,7 @@ class AppDrawer extends ConsumerWidget {
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: isDark ? Colors.redAccent[100] : Colors.red,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
@@ -297,15 +296,30 @@ class AppDrawer extends ConsumerWidget {
                   ),
                   backgroundColor: isDark
                       ? Colors.red.withValues(alpha: 0.1)
-                      : Colors.transparent,
+                      : Colors.red.withValues(alpha: 0.05), // Premium soft background
                 ),
-                icon: const Icon(Icons.logout_rounded, size: 22),
-                label: Text(
-                  context.loc.logout,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.diagonal3Values(
+                        Directionality.of(context) == TextDirection.rtl ? -1.0 : 1.0,
+                        1.0,
+                        1.0,
+                      ),
+                      child: const Icon(Icons.logout_rounded, size: 22),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      context.loc.logout,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
