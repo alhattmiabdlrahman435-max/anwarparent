@@ -100,10 +100,10 @@ class _AbsenceRequestCard extends StatelessWidget {
             : (isDark ? Colors.white70 : const Color(0xFF4A5568));
 
     final statusText = isRejected
-        ? (context.loc.language == 'ar' ? 'مرفوض' : 'Rejected')
+        ? context.loc.rejected
         : isApproved
-            ? (context.loc.language == 'ar' ? 'مقبول' : 'Approved')
-            : (context.loc.language == 'ar' ? 'قيد الانتظار' : 'Pending');
+            ? context.loc.approved
+            : context.loc.pending;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -129,10 +129,22 @@ class _AbsenceRequestCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Row: Status Badge (left) & Name (right)
+          // Top Row: Student Name (start) & Status Badge (end)
+          // Row automatically handles RTL mirroring
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Expanded(
+                child: Text(
+                  request.studentName,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.start,
+                ),
+              ),
+              const SizedBox(width: 16),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
@@ -149,81 +161,40 @@ class _AbsenceRequestCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(
-                child: Text(
-                  request.studentName,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.end,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 12),
 
-          // Date & Duration Row
+          // Date Row (Icon first, then Text)
+          // In RTL, Row places Icon on the right and Text on the left.
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Duration
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    request.duration,
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.access_time_rounded,
-                    size: 16,
-                    color: Color(0xFF64748B),
-                  ),
-                ],
+              const Icon(
+                Icons.calendar_today_rounded,
+                size: 16,
+                color: Color(0xFF64748B),
               ),
-              const SizedBox(width: 16),
-              // Date
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "${request.date.year}-${request.date.month}-${request.date.day}",
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.calendar_today_rounded,
-                    size: 16,
-                    color: Color(0xFF64748B),
-                  ),
-                ],
+              const SizedBox(width: 6),
+              Text(
+                "${request.date.year}-${request.date.month}-${request.date.day}",
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
 
           if (request.reason.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                request.reason,
-                style: TextStyle(
-                  color: isDark ? Colors.white70 : const Color(0xFF1E293B),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.end,
+            Text(
+              request.reason,
+              style: TextStyle(
+                color: isDark ? Colors.white70 : const Color(0xFF1E293B),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -238,31 +209,27 @@ class _AbsenceRequestCard extends StatelessWidget {
               thickness: 1,
             ),
             const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    context.loc.language == 'ar' ? 'سبب الرفض:' : 'Rejection Reason:',
-                    style: const TextStyle(
-                      color: Color(0xFFE53935),
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.loc.rejectionReason,
+                  style: const TextStyle(
+                    color: Color(0xFFE53935),
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    request.rejectionReason!,
-                    style: const TextStyle(
-                      color: Color(0xFFE53935),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.end,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  request.rejectionReason!,
+                  style: const TextStyle(
+                    color: Color(0xFFE53935),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ],

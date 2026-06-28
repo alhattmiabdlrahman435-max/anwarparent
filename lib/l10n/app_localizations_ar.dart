@@ -65,6 +65,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get absenceRequestsHistory => 'سجل طلبات الغياب';
 
   @override
+  String get rejected => 'مرفوض';
+
+  @override
+  String get approved => 'مقبول';
+
+  @override
+  String get pending => 'قيد الانتظار';
+
+  @override
+  String get rejectionReason => 'سبب الرفض:';
+
+  @override
   String get gradesAndAnalytics => 'الدرجات والتحليلات';
 
   @override

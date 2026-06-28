@@ -206,6 +206,30 @@ abstract class AppLocalizations {
   /// **'سجل طلبات الغياب'**
   String get absenceRequestsHistory;
 
+  /// No description provided for @rejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get rejected;
+
+  /// No description provided for @approved.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقبول'**
+  String get approved;
+
+  /// No description provided for @pending.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد الانتظار'**
+  String get pending;
+
+  /// No description provided for @rejectionReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الرفض:'**
+  String get rejectionReason;
+
   /// No description provided for @gradesAndAnalytics.
   ///
   /// In ar, this message translates to:

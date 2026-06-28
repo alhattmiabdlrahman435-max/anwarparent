@@ -65,6 +65,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get absenceRequestsHistory => 'Absence History';
 
   @override
+  String get rejected => 'Rejected';
+
+  @override
+  String get approved => 'Approved';
+
+  @override
+  String get pending => 'Pending';
+
+  @override
+  String get rejectionReason => 'Rejection Reason:';
+
+  @override
   String get gradesAndAnalytics => 'Grades & Analytics';
 
   @override
