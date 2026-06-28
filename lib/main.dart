@@ -96,14 +96,6 @@ class ParentApp extends ConsumerWidget {
         Locale('en'),
       ],
       locale: settings.locale,
-      builder: (context, child) {
-        return Listener(
-          onPointerDown: (_) {
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: child,
-        );
-      },
     );
   }
 }

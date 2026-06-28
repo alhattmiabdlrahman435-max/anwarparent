@@ -53,9 +53,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       backgroundColor: bgColor,
-      body: SafeArea(
-        child: Stack(
-          children: [
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: SafeArea(
+          child: Stack(
+            children: [
             // Top left icons
             Positioned(
               top: 16,
@@ -267,6 +270,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
