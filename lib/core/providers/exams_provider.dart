@@ -37,10 +37,11 @@ class Exams extends _$Exams {
           }
 
           final List<dynamic> subjectsJson = item['subjects'] ?? [];
-          final subjects = subjectsJson.map((sub) {
+          final List<ExamSubject> subjects = subjectsJson.map<ExamSubject>((sub) {
             return ExamSubject(
               subjectName: sub['name_ar'] ?? sub['name'] ?? '',
               date: DateTime.tryParse(sub['exam_date']?.toString() ?? '') ?? DateTime.now(),
+              time: sub['exam_time']?.toString() ?? '',
               note: sub['note'] ?? '',
             );
           }).toList();
