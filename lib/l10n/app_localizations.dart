@@ -200,6 +200,36 @@ abstract class AppLocalizations {
   /// **'طلب غياب'**
   String get absenceRequest;
 
+  /// No description provided for @absenceRequestsHistory.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجل طلبات الغياب'**
+  String get absenceRequestsHistory;
+
+  /// No description provided for @rejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get rejected;
+
+  /// No description provided for @approved.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقبول'**
+  String get approved;
+
+  /// No description provided for @pending.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد الانتظار'**
+  String get pending;
+
+  /// No description provided for @rejectionReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الرفض:'**
+  String get rejectionReason;
+
   /// No description provided for @gradesAndAnalytics.
   ///
   /// In ar, this message translates to:
@@ -919,6 +949,30 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'نشاط حر'**
   String get freeActivity;
+
+  /// No description provided for @subject.
+  ///
+  /// In ar, this message translates to:
+  /// **'المادة'**
+  String get subject;
+
+  /// No description provided for @date.
+  ///
+  /// In ar, this message translates to:
+  /// **'التاريخ'**
+  String get date;
+
+  /// No description provided for @time.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوقت'**
+  String get time;
+
+  /// No description provided for @syllabusNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'المقرر/الملاحظة'**
+  String get syllabusNote;
 }
 
 class _AppLocalizationsDelegate

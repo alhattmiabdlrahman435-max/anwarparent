@@ -62,6 +62,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get absenceRequest => 'Absence Request';
 
   @override
+  String get absenceRequestsHistory => 'Absence History';
+
+  @override
+  String get rejected => 'Rejected';
+
+  @override
+  String get approved => 'Approved';
+
+  @override
+  String get pending => 'Pending';
+
+  @override
+  String get rejectionReason => 'Rejection Reason:';
+
+  @override
   String get gradesAndAnalytics => 'Grades & Analytics';
 
   @override
@@ -433,4 +448,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get freeActivity => 'Free Activity';
+
+  @override
+  String get subject => 'Subject';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get syllabusNote => 'Syllabus / Note';
 }

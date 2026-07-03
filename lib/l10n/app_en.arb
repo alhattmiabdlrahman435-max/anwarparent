@@ -24,6 +24,11 @@
   "parentAccount": "Parent Account",
   "quickAccess": "Quick Access",
   "absenceRequest": "Absence Request",
+  "absenceRequestsHistory": "Absence History",
+  "rejected": "Rejected",
+  "approved": "Approved",
+  "pending": "Pending",
+  "rejectionReason": "Rejection Reason:",
   "gradesAndAnalytics": "Grades & Analytics",
   "schoolAssignments": "School Assignments",
   "attendanceRecord": "Attendance Record",
@@ -164,5 +169,9 @@
   "islamicStudies": "Islamic Studies",
   "physicalEducation": "Physical Education",
   "art": "Art",
-  "freeActivity": "Free Activity"
+  "freeActivity": "Free Activity",
+  "subject": "Subject",
+  "date": "Date",
+  "time": "Time",
+  "syllabusNote": "Syllabus / Note"
 }

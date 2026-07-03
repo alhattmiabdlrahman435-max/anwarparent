@@ -62,6 +62,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get absenceRequest => 'طلب غياب';
 
   @override
+  String get absenceRequestsHistory => 'سجل طلبات الغياب';
+
+  @override
+  String get rejected => 'مرفوض';
+
+  @override
+  String get approved => 'مقبول';
+
+  @override
+  String get pending => 'قيد الانتظار';
+
+  @override
+  String get rejectionReason => 'سبب الرفض:';
+
+  @override
   String get gradesAndAnalytics => 'الدرجات والتحليلات';
 
   @override
@@ -429,4 +444,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get freeActivity => 'نشاط حر';
+
+  @override
+  String get subject => 'المادة';
+
+  @override
+  String get date => 'التاريخ';
+
+  @override
+  String get time => 'الوقت';
+
+  @override
+  String get syllabusNote => 'المقرر/الملاحظة';
 }

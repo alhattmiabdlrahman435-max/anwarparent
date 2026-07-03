@@ -1,27 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/app_settings.dart';
 
 part 'settings_provider.g.dart';
 
-class AppSettings {
-  final ThemeMode themeMode;
-  final Locale locale;
-
-  const AppSettings({
-    this.themeMode = ThemeMode.light,
-    this.locale = const Locale('ar'),
-  });
-
-  AppSettings copyWith({ThemeMode? themeMode, Locale? locale}) {
-    return AppSettings(
-      themeMode: themeMode ?? this.themeMode,
-      locale: locale ?? this.locale,
-    );
-  }
-}
-
-@riverpod
+@Riverpod(keepAlive: true)
 class Settings extends _$Settings {
   @override
   AppSettings build() {
@@ -30,14 +14,18 @@ class Settings extends _$Settings {
   }
 
   Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isDark = prefs.getBool('isDark') ?? false;
-    final languageCode = prefs.getString('languageCode') ?? 'ar';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isDark = prefs.getBool('isDark') ?? false;
+      final languageCode = prefs.getString('languageCode') ?? 'ar';
 
-    state = state.copyWith(
-      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-      locale: Locale(languageCode),
-    );
+      state = state.copyWith(
+        themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+        locale: Locale(languageCode),
+      );
+    } catch (_) {
+      // In case of error, defaults (ar, light theme) returned by build() will be preserved.
+    }
   }
 
   Future<void> toggleTheme(bool isDark) async {

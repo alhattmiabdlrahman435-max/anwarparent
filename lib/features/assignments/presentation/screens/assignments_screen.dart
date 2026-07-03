@@ -48,7 +48,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
     List<Assignment> dailyAssignments = [];
     if (currentChild != null) {
       dailyAssignments = ref
-          .read(assignmentsProvider.notifier)
+          .watch(assignmentsProvider.notifier)
           .getAssignmentsForDate(currentChild.id, selectedDate);
     }
 

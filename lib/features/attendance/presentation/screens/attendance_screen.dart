@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/providers/children_provider.dart';
+import '../../../../core/models/student.dart';
 import '../../../../core/providers/attendance_provider.dart';
 import '../../../../core/models/attendance.dart';
 import '../../../../core/extensions/localization_extension.dart';

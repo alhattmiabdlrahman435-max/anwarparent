@@ -21,7 +21,7 @@ final class ChildrenProvider
         argument: null,
         retry: null,
         name: r'childrenProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -48,7 +48,7 @@ final class ChildrenProvider
   }
 }
 
-String _$childrenHash() => r'bff20e6e3560940cb2d49def27164ca2e3704bd1';
+String _$childrenHash() => r'bef0c9727163afa473a3bda9efb47b833c319733';
 
 @ProviderFor(CurrentChild)
 final currentChildProvider = CurrentChildProvider._();
@@ -61,7 +61,7 @@ final class CurrentChildProvider
         argument: null,
         retry: null,
         name: r'currentChildProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -82,7 +82,7 @@ final class CurrentChildProvider
   }
 }
 
-String _$currentChildHash() => r'12c6f4fc22cef9fa15c128d1fb8facd8fae3a0eb';
+String _$currentChildHash() => r'c18028cb344dff825926394e6df62a8d4d61aa7f';
 
 abstract class _$CurrentChild extends $Notifier<Student?> {
   Student? build();

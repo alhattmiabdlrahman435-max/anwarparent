@@ -35,9 +35,11 @@ class AppDrawer extends ConsumerWidget {
         children: [
           // ---------------- HEADER ----------------
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 40 + 10,
+            padding: const EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 12,
+              bottom: 16,
             ),
             // Unified Background: No gradient, matches drawerBg
             decoration: BoxDecoration(
@@ -142,7 +144,7 @@ class AppDrawer extends ConsumerWidget {
           // ---------------- MENU ----------------
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              padding: const EdgeInsets.only(top: 8, bottom: 24, left: 16, right: 16),
               children: [
                 _DrawerItem(
                   title: context.loc.home,
@@ -189,6 +191,16 @@ class AppDrawer extends ConsumerWidget {
                   primaryColor: primaryColor,
                   onTap: () =>
                       _navigate(context, currentRoute, '/absence_request'),
+                ),
+                _DrawerItem(
+                  title: context.loc.absenceRequestsHistory,
+                  icon: Icons.assignment_turned_in_rounded,
+                  route: '/absence_history',
+                  currentRoute: currentRoute,
+                  isDark: isDark,
+                  primaryColor: primaryColor,
+                  onTap: () =>
+                      _navigate(context, currentRoute, '/absence_history'),
                 ),
                 _DrawerItem(
                   title: context.loc.classSchedule,
@@ -240,12 +252,11 @@ class AppDrawer extends ConsumerWidget {
             ),
           ),
 
-          // ---------------- LOGOUT ----------------
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: SafeArea(
               top: false,
-              child: TextButton.icon(
+              child: TextButton(
                 onPressed: () {
                   showDialog(
                     context: context,
@@ -274,7 +285,7 @@ class AppDrawer extends ConsumerWidget {
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: isDark ? Colors.redAccent[100] : Colors.red,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
@@ -285,15 +296,30 @@ class AppDrawer extends ConsumerWidget {
                   ),
                   backgroundColor: isDark
                       ? Colors.red.withValues(alpha: 0.1)
-                      : Colors.transparent,
+                      : Colors.red.withValues(alpha: 0.05), // Premium soft background
                 ),
-                icon: const Icon(Icons.logout_rounded, size: 22),
-                label: Text(
-                  context.loc.logout,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.diagonal3Values(
+                        Directionality.of(context) == TextDirection.rtl ? -1.0 : 1.0,
+                        1.0,
+                        1.0,
+                      ),
+                      child: const Icon(Icons.logout_rounded, size: 22),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      context.loc.logout,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

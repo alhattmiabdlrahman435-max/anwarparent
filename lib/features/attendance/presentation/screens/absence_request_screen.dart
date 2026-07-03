@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/providers/children_provider.dart';
+import '../../../../core/models/student.dart';
+import '../../../../core/models/absence_request.dart';
+import '../../../../core/providers/absence_requests_provider.dart';
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/extensions/localization_extension.dart';
@@ -40,6 +43,18 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
       await Future.delayed(const Duration(seconds: 1));
 
       if (!mounted) return;
+
+      final student = ref.read(childrenProvider).firstWhere((s) => s.id == selectedStudentId);
+      final newRequest = AbsenceRequest(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        studentId: selectedStudentId!,
+        studentName: student.name,
+        date: selectedDate ?? DateTime.now(),
+        duration: context.loc.language == 'ar' ? 'يوم كامل' : 'Full Day',
+        reason: _reasonController.text,
+        status: AbsenceRequestStatus.pending,
+      );
+      ref.read(absenceRequestsProvider.notifier).addRequest(newRequest);
 
       _showSuccessSnackBar(context.loc.absenceRequestSentSuccessfully);
       await Future.delayed(const Duration(milliseconds: 1000));
@@ -97,38 +112,42 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       drawer: const AppDrawer(),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          AppSliverHeader(title: context.loc.absenceRequest, showChildSwitcher: false),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionLabel(context, context.loc.children),
-                  const SizedBox(height: 12),
-                  _studentSelector(context, textTheme, isDark),
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            AppSliverHeader(title: context.loc.absenceRequest, showChildSwitcher: false),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionLabel(context, context.loc.children),
+                    const SizedBox(height: 12),
+                    _studentSelector(context, textTheme, isDark),
 
-                  const SizedBox(height: 30),
-                  _buildSectionLabel(context, context.loc.selectDate),
-                  const SizedBox(height: 12),
-                  _modernDatePicker(textTheme, isDark),
+                    const SizedBox(height: 30),
+                    _buildSectionLabel(context, context.loc.selectDate),
+                    const SizedBox(height: 12),
+                    _modernDatePicker(textTheme, isDark),
 
-                  const SizedBox(height: 30),
-                  _buildSectionLabel(context, context.loc.reasonOptional),
-                  const SizedBox(height: 12),
-                  _modernReasonField(textTheme, isDark),
+                    const SizedBox(height: 30),
+                    _buildSectionLabel(context, context.loc.reasonOptional),
+                    const SizedBox(height: 12),
+                    _modernReasonField(textTheme, isDark),
 
-                  const SizedBox(height: 40),
-                  _submitButton(textTheme),
-                  SizedBox(height: MediaQuery.of(context).padding.bottom + 40),
-                ],
+                    const SizedBox(height: 40),
+                    _submitButton(textTheme),
+                    SizedBox(height: MediaQuery.of(context).padding.bottom + 40),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

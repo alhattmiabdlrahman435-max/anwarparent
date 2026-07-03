@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/children_provider.dart';
+import '../models/student.dart';
 import '../extensions/localization_extension.dart';
 
 class AppSliverHeader extends ConsumerWidget {
@@ -27,7 +28,8 @@ class AppSliverHeader extends ConsumerWidget {
     final currentChild = ref.watch(currentChildProvider);
     final children = ref.watch(childrenProvider);
 
-    return CupertinoSliverNavigationBar(
+
+    Widget header = CupertinoSliverNavigationBar(
       backgroundColor: bgColor.withValues(alpha: 0.8),
       border: null, // Removes bottom border
       alwaysShowMiddle: false,
@@ -119,6 +121,8 @@ class AppSliverHeader extends ConsumerWidget {
         ],
       ),
     );
+
+    return header;
   }
 
   void _showChildSelector(

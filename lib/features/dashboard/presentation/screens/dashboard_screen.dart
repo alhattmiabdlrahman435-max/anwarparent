@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/providers/children_provider.dart';
+import '../../../../core/models/student.dart';
 import '../../../../core/providers/parent_provider.dart';
 import '../../../../core/extensions/localization_extension.dart';
 
@@ -459,6 +460,16 @@ class _QuickActions extends StatelessWidget {
                 isDark: isDark,
                 badgeCount: 3,
                 onTap: () => context.push('/notifications'),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _QuickActionButton(
+                icon: Icons.assignment_turned_in_rounded,
+                label: context.loc.absenceRequestsHistory,
+                color: Colors.green,
+                isDark: isDark,
+                onTap: () => context.push('/absence_history'),
               ),
             ),
             const SizedBox(width: 16),
