@@ -1,3 +1,4 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../utils/constants.dart';
@@ -23,14 +24,15 @@ Dio apiClient(Ref ref) {
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final token = await ref.read(authProvider.notifier).getToken();
+        const storage = FlutterSecureStorage();
+        final token = await storage.read(key: 'auth_token');
         if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
         }
         return handler.next(options);
       },
       onError: (DioException e, handler) {
-        if (e.response?.statusCode == 401) {
+        if (e.response?.statusCode == 401 && !e.requestOptions.path.contains('login')) {
           // Trigger logout if token is expired/invalid
           ref.read(authProvider.notifier).logout();
         }

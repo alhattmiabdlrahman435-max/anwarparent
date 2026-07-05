@@ -125,12 +125,15 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     final primaryColor = isDark ? Colors.white : const Color(0xFF062A5A);
 
     final currentChild = ref.watch(currentChildProvider);
+    final allSchedules = ref.watch(classSchedulesProvider);
     ClassSchedule? schedule;
 
     if (currentChild != null) {
-      schedule = ref
-          .watch(classSchedulesProvider.notifier)
-          .getScheduleForStudent(currentChild.id);
+      try {
+        schedule = allSchedules.firstWhere((s) => s.studentId == currentChild.id);
+      } catch (_) {
+        schedule = null;
+      }
     }
 
     final now = DateTime.now();
@@ -139,11 +142,13 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       drawer: const AppDrawer(),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-        slivers: [
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(classSchedulesProvider.notifier).refresh(),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
           AppSliverHeader(
             title: context.loc.classSchedule,
             showChildSwitcher: true,
@@ -609,6 +614,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
           ],
         ],
       ),
+     ),
     );
   }
 }

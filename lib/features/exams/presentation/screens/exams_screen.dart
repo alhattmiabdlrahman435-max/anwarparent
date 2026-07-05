@@ -50,12 +50,14 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
     final unselectedColor = isDark ? Colors.white54 : const Color(0xFF64748B);
 
     final currentChild = ref.watch(currentChildProvider);
+    final allExams = ref.watch(examsProvider);
 
     List<ExamSchedule> studentExams = [];
     if (currentChild != null) {
-      studentExams = ref
-          .watch(examsProvider.notifier)
-          .getExamsForStudent(currentChild.id);
+      // Filter the schedules to only match this student's classId
+      studentExams = allExams
+          .where((e) => e.studentId == currentChild.classId)
+          .toList();
     }
 
     final currentTerm = _tabController.index == 0
@@ -70,10 +72,12 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
     return Scaffold(
       backgroundColor: bgColor,
       drawer: const AppDrawer(),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(examsProvider.notifier).refresh(),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
         slivers: [
           AppSliverHeader(
             title: context.loc.exams,
@@ -378,6 +382,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
           ],
         ],
       ),
+     ),
     );
   }
 

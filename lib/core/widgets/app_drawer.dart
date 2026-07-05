@@ -76,11 +76,16 @@ class AppDrawer extends ConsumerWidget {
                             backgroundColor: primaryColor.withValues(
                               alpha: 0.2,
                             ),
-                            child: Icon(
-                              CupertinoIcons.person_solid,
-                              size: 45,
-                              color: isDark ? Colors.white : primaryColor,
-                            ),
+                            child: parent.avatarUrl != null && parent.avatarUrl!.isNotEmpty
+                                ? Text(
+                                    parent.avatarUrl!,
+                                    style: const TextStyle(fontSize: 40),
+                                  )
+                                : Icon(
+                                    CupertinoIcons.person_solid,
+                                    size: 45,
+                                    color: isDark ? Colors.white : primaryColor,
+                                  ),
                           ),
                         ),
                         Container(
@@ -230,6 +235,16 @@ class AppDrawer extends ConsumerWidget {
                   onTap: () => _navigate(context, currentRoute, '/fees'),
                 ),
                 _DrawerItem(
+                  title: 'البلاغات',
+                  icon: CupertinoIcons.exclamationmark_shield_fill,
+                  route: '/alerts',
+                  currentRoute: currentRoute,
+                  isDark: isDark,
+                  primaryColor: const Color(0xFFDC2626),
+                  onTap: () => _navigate(context, currentRoute, '/alerts'),
+                  isHighPriority: true,
+                ),
+                _DrawerItem(
                   title: context.loc.notifications,
                   icon: CupertinoIcons.bell,
                   route: '/notifications',
@@ -350,6 +365,7 @@ class _DrawerItem extends StatelessWidget {
     required this.isDark,
     required this.primaryColor,
     required this.onTap,
+    this.isHighPriority = false,
   });
 
   final String title;
@@ -359,25 +375,27 @@ class _DrawerItem extends StatelessWidget {
   final bool isDark;
   final Color primaryColor;
   final VoidCallback onTap;
+  final bool isHighPriority;
 
   @override
   Widget build(BuildContext context) {
     final bool isSelected = currentRoute == route && route != '/';
 
-    // Light Mode: Very soft Primary Tint
-    // Dark Mode: Very soft White/Accent Tint
-
     final Color backgroundColor = isSelected
         ? (isDark
               ? Colors.white.withValues(alpha: 0.1)
               : primaryColor.withValues(alpha: 0.08))
-        : Colors.transparent;
+        : (isHighPriority
+              ? primaryColor.withValues(alpha: isDark ? 0.1 : 0.06)
+              : Colors.transparent);
 
     final Color foregroundColor = isSelected
         ? (isDark ? Colors.amber : primaryColor)
-        : (isDark ? Colors.white70 : const Color(0xFF64748B));
+        : (isHighPriority
+              ? primaryColor
+              : (isDark ? Colors.white70 : const Color(0xFF64748B)));
 
-    final FontWeight fontWeight = isSelected
+    final FontWeight fontWeight = (isSelected || isHighPriority)
         ? FontWeight.w700
         : FontWeight.w500;
 

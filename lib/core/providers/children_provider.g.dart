@@ -9,12 +9,11 @@ part of 'children_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(children)
+@ProviderFor(Children)
 final childrenProvider = ChildrenProvider._();
 
 final class ChildrenProvider
-    extends $FunctionalProvider<List<Student>, List<Student>, List<Student>>
-    with $Provider<List<Student>> {
+    extends $NotifierProvider<Children, List<Student>> {
   ChildrenProvider._()
     : super(
         from: null,
@@ -31,13 +30,7 @@ final class ChildrenProvider
 
   @$internal
   @override
-  $ProviderElement<List<Student>> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  List<Student> create(Ref ref) {
-    return children(ref);
-  }
+  Children create() => Children();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(List<Student> value) {
@@ -48,7 +41,25 @@ final class ChildrenProvider
   }
 }
 
-String _$childrenHash() => r'bef0c9727163afa473a3bda9efb47b833c319733';
+String _$childrenHash() => r'94ebdb394cc0481cf753d15000b91844fabe9acc';
+
+abstract class _$Children extends $Notifier<List<Student>> {
+  List<Student> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<List<Student>, List<Student>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<List<Student>, List<Student>>,
+              List<Student>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
 
 @ProviderFor(CurrentChild)
 final currentChildProvider = CurrentChildProvider._();

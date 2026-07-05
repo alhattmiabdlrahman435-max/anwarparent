@@ -38,11 +38,10 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
 
     final currentChild = ref.watch(currentChildProvider);
+    final grades = ref.watch(gradesProvider);
     List<SubjectGrade> subjects = [];
     if (currentChild != null) {
-      subjects = ref
-          .watch(gradesProvider.notifier)
-          .getGradesForStudent(currentChild.id);
+      subjects = grades.where((g) => g.studentId == currentChild.id).toList();
     }
 
     return Scaffold(

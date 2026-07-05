@@ -15,21 +15,51 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   void _handleLogin() async {
-    // Use the auth provider for simulated secure login
-    await ref.read(authProvider.notifier).login('username', 'password');
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isArabic
+                ? 'الرجاء إدخال اسم المستخدم وكلمة المرور'
+                : 'Please enter username and password',
+          ),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    await ref.read(authProvider.notifier).login(username, password);
     
     if (mounted) {
       final authState = ref.read(authProvider);
-      if (!authState.hasError) {
-        context.go('/dashboard');
-      } else {
-        // Handle error (e.g., show snackbar)
+      if (authState.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('حدث خطأ في تسجيل الدخول')),
+          SnackBar(
+            content: Text(authState.error.toString()),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
+      } else if (authState.value == true) {
+        context.go('/dashboard');
       }
     }
   }
@@ -178,6 +208,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                           // National ID Field
                           _buildTextField(
+                            controller: _usernameController,
                             label: context.loc.nationalId,
                             icon: CupertinoIcons.creditcard,
                             fillColor: fieldColor,
@@ -189,6 +220,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                           // Password Field
                           _buildTextField(
+                            controller: _passwordController,
                             label: context.loc.password,
                             icon: CupertinoIcons.lock_fill,
                             fillColor: fieldColor,
@@ -299,6 +331,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _buildTextField({
+    required TextEditingController controller,
     required String label,
     required IconData icon,
     required Color fillColor,
@@ -308,6 +341,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     bool isPassword = false,
   }) {
     return TextFormField(
+      controller: controller,
       obscureText: isPassword && _obscurePassword,
       style: TextStyle(
         color: textColor,

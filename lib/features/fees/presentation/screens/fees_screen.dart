@@ -1,10 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/extensions/localization_extension.dart';
+import '../../../../core/providers/children_provider.dart';
+import '../../../../core/providers/finance_provider.dart';
+import '../../../../core/models/student_finance.dart';
 
 class FeesScreen extends ConsumerWidget {
   const FeesScreen({super.key});
@@ -17,122 +21,171 @@ class FeesScreen extends ConsumerWidget {
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final subTextColor = isDark ? Colors.white70 : const Color(0xFF64748B);
 
+    final currentChild = ref.watch(currentChildProvider);
+    final financeRecords = ref.watch(financeProvider);
+
+    StudentFinanceSummary? financeSummary;
+    if (currentChild != null && financeRecords.isNotEmpty) {
+      try {
+        financeSummary = financeRecords.firstWhere((f) => f.studentId == currentChild.id);
+      } catch (_) {
+        financeSummary = null;
+      }
+    }
+
     return Scaffold(
       backgroundColor: bgColor,
       drawer: const AppDrawer(),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-        slivers: [
-          AppSliverHeader(title: context.loc.fees),
-          SliverPadding(
-            padding: const EdgeInsets.all(20),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                // Summary Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF062A5A), Color(0xFF14448A)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF062A5A).withValues(alpha: 0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.loc.totalFees,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(financeProvider.notifier).refresh(),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            AppSliverHeader(title: context.loc.fees, showChildSwitcher: true),
+            SliverPadding(
+              padding: const EdgeInsets.all(20),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  if (currentChild == null)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40.0),
+                        child: Text(
+                          context.loc.pleaseSelectStudent,
+                          style: TextStyle(color: textColor),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        context.loc.currencySar('300,000'),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
+                    )
+                  else if (financeRecords.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (financeSummary == null)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40.0),
+                        child: Text(
+                          'لا توجد رسوم مالية مسجلة لهذا الطالب',
+                          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildSummaryItem(
-                              context.loc.paid,
-                              '200,000',
-                              Colors.greenAccent,
-                            ),
-                          ),
-                          Container(
-                            width: 1,
-                            height: 40,
-                            color: Colors.white24,
-                          ),
-                          Expanded(
-                            child: _buildSummaryItem(
-                              context.loc.remaining,
-                              '100,000',
-                              Colors.redAccent,
-                            ),
+                    )
+                  else ...[
+                    // Summary Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF062A5A), Color(0xFF14448A)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF062A5A).withValues(alpha: 0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.loc.totalFees,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            context.loc.currencySar(financeSummary.totalFees.toStringAsFixed(0)),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildSummaryItem(
+                                  context.loc.paid,
+                                  financeSummary.paidFees.toStringAsFixed(0),
+                                  Colors.greenAccent,
+                                ),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 40,
+                                color: Colors.white24,
+                              ),
+                              Expanded(
+                                child: _buildSummaryItem(
+                                  context.loc.remaining,
+                                  financeSummary.remainingFees.toStringAsFixed(0),
+                                  Colors.redAccent,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
 
-                // History Header
-                Text(
-                  context.loc.paymentHistory,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 16),
+                    // History Header
+                    Text(
+                      context.loc.paymentHistory,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
 
-                // Payment Records
-                _buildPaymentCard(
-                  context: context,
-                  date: '1 Feb 2023',
-                  amount: context.loc.currencySar('50,000'),
-                  cardColor: cardColor,
-                  textColor: textColor,
-                  subTextColor: subTextColor,
-                  isDark: isDark,
-                ),
-                const SizedBox(height: 12),
-                _buildPaymentCard(
-                  context: context,
-                  date: '1 Jan 2023',
-                  amount: context.loc.currencySar('50,000'),
-                  cardColor: cardColor,
-                  textColor: textColor,
-                  subTextColor: subTextColor,
-                  isDark: isDark,
-                ),
-              ]),
+                    // Payment Records
+                    if (financeSummary.payments.isEmpty)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20.0),
+                          child: Text(
+                            'لم يتم تسجيل أي عمليات دفع بعد',
+                            style: TextStyle(color: subTextColor),
+                          ),
+                        ),
+                      )
+                    else
+                      ...financeSummary.payments.map(
+                        (payment) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: _buildPaymentCard(
+                            context: context,
+                            date: DateFormat('dd MMM yyyy', Localizations.localeOf(context).languageCode).format(payment.paymentDate),
+                            amount: context.loc.currencySar(payment.amount.toStringAsFixed(0)),
+                            refNo: payment.referenceNo,
+                            cardColor: cardColor,
+                            textColor: textColor,
+                            subTextColor: subTextColor,
+                            isDark: isDark,
+                          ),
+                        ),
+                      ),
+                  ],
+                ]),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -165,6 +218,7 @@ class FeesScreen extends ConsumerWidget {
     required BuildContext context,
     required String date,
     required String amount,
+    required String refNo,
     required Color cardColor,
     required Color textColor,
     required Color subTextColor,
@@ -214,7 +268,7 @@ class FeesScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  date,
+                  '$date | $refNo',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,

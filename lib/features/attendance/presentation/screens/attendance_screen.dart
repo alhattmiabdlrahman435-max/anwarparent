@@ -23,6 +23,16 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   DateTime _focusedDay = DateTime.now();
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(attendanceDataProvider.notifier).refresh();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
@@ -31,12 +41,15 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
     final kids = ref.watch(childrenProvider);
     final currentChild = ref.watch(currentChildProvider);
+    final attendanceRecords = ref.watch(attendanceDataProvider);
 
     AttendanceRecord? record;
-    if (currentChild != null) {
-      record = ref
-          .watch(attendanceDataProvider.notifier)
-          .getRecordForStudent(currentChild.id);
+    if (currentChild != null && attendanceRecords.isNotEmpty) {
+      try {
+        record = attendanceRecords.firstWhere((r) => r.studentId == currentChild.id);
+      } catch (_) {
+        record = null;
+      }
     }
 
     return Scaffold(
@@ -80,7 +93,12 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
                 const SizedBox(height: 24),
 
-                if (record != null) ...[
+                if (kids.isNotEmpty && attendanceRecords.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (record != null) ...[
                   // Summary Cards
                   Row(
                     children: [

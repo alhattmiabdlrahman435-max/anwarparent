@@ -20,7 +20,7 @@ final class AttendanceDataProvider
         argument: null,
         retry: null,
         name: r'attendanceDataProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,7 +41,7 @@ final class AttendanceDataProvider
   }
 }
 
-String _$attendanceDataHash() => r'8a4a3c0d8219f42aa12c7f6bcd474df4f6dadb4a';
+String _$attendanceDataHash() => r'8b41b7a4bef18e476a241b13e1d454369f2775db';
 
 abstract class _$AttendanceData extends $Notifier<List<AttendanceRecord>> {
   List<AttendanceRecord> build();

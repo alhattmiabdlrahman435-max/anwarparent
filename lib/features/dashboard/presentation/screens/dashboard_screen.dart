@@ -8,6 +8,7 @@ import '../../../../core/providers/children_provider.dart';
 import '../../../../core/models/student.dart';
 import '../../../../core/providers/parent_provider.dart';
 import '../../../../core/extensions/localization_extension.dart';
+import '../../../../core/providers/notifications_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -15,6 +16,12 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final students = ref.watch(childrenProvider);
+    final notificationsAsync = ref.watch(notificationsProvider);
+    final unreadCount = notificationsAsync.maybeWhen(
+      data: (list) => list.where((n) => !n.isRead).length,
+      orElse: () => 0,
+    );
+
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -23,44 +30,68 @@ class DashboardScreen extends ConsumerWidget {
           ? theme.scaffoldBackgroundColor
           : const Color(0xFFF8FAFC),
       drawer: const AppDrawer(),
-      body: CustomScrollView(
-        physics: const ClampingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-        slivers: [
-          AppSliverHeader(title: context.loc.home, showChildSwitcher: false),
-          SliverPadding(
-            padding: const EdgeInsets.all(20.0),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                const _WelcomeHeader(),
-                const SizedBox(height: 24),
-
-                _SummaryStats(students: students, isDark: isDark),
-                const SizedBox(height: 24),
-
-                _SectionTitle(title: context.loc.myChildren, isDark: isDark),
-                const SizedBox(height: 16),
-                ...students.map(
-                  (student) => _ChildQuickCard(
-                    student: student,
-                    isDark: isDark,
-                    onTap: () {
-                      ref.read(currentChildProvider.notifier).setChild(student);
-                      context.push('/grades');
-                    },
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                _SectionTitle(title: context.loc.quickAccess, isDark: isDark),
-                const SizedBox(height: 16),
-                _QuickActions(isDark: isDark),
-                const SizedBox(height: 40),
-              ]),
-            ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(childrenProvider.notifier).refresh();
+          await ref.read(notificationsProvider.notifier).refresh();
+        },
+        child: CustomScrollView(
+          physics: const ClampingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
           ),
-        ],
+          slivers: [
+            AppSliverHeader(title: context.loc.home, showChildSwitcher: false),
+            SliverPadding(
+              padding: const EdgeInsets.all(20.0),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  const _WelcomeHeader(),
+                  const SizedBox(height: 24),
+
+                  _SummaryStats(
+                    students: students,
+                    isDark: isDark,
+                    unreadCount: unreadCount,
+                  ),
+                  const SizedBox(height: 24),
+                  _SectionTitle(title: context.loc.myChildren, isDark: isDark),
+                  const SizedBox(height: 16),
+                  if (students.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24.0),
+                        child: Text(
+                          'جاري تحميل الأبناء...',
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    ...students.map(
+                      (student) => _ChildQuickCard(
+                        student: student,
+                        isDark: isDark,
+                        onTap: () {
+                          ref.read(currentChildProvider.notifier).setChild(student);
+                          context.push('/grades');
+                        },
+                      ),
+                    ),
+                  const SizedBox(height: 24),
+
+                  _SectionTitle(title: context.loc.quickAccess, isDark: isDark),
+                  const SizedBox(height: 16),
+                  _QuickActions(isDark: isDark, unreadCount: unreadCount),
+                  const SizedBox(height: 40),
+                ]),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -113,15 +144,20 @@ class _WelcomeHeader extends ConsumerWidget {
             child: CircleAvatar(
               radius: 30,
               backgroundColor: Colors.white.withValues(alpha: 0.2),
-              child: Text(
-                parent.name.isNotEmpty ? parent.name.substring(0, 1) : '?',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  fontFamily: 'GoogleSans',
-                ),
-              ),
+              child: parent.avatarUrl != null && parent.avatarUrl!.isNotEmpty
+                  ? Text(
+                      parent.avatarUrl!,
+                      style: const TextStyle(fontSize: 28),
+                    )
+                  : Text(
+                      parent.name.isNotEmpty ? parent.name.substring(0, 1) : '?',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'GoogleSans',
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 16),
@@ -183,10 +219,15 @@ class _WelcomeHeader extends ConsumerWidget {
 }
 
 class _SummaryStats extends StatelessWidget {
-  const _SummaryStats({required this.students, required this.isDark});
+  const _SummaryStats({
+    required this.students,
+    required this.isDark,
+    required this.unreadCount,
+  });
 
   final List<Student> students;
   final bool isDark;
+  final int unreadCount;
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +246,7 @@ class _SummaryStats extends StatelessWidget {
         Expanded(
           child: _StatCard(
             icon: Icons.notifications_active_rounded,
-            value: '3',
+            value: unreadCount.toString(),
             label: context.loc.notifications,
             color: const Color(0xFFEF4444),
             isDark: isDark,
@@ -374,9 +415,10 @@ class _ChildQuickCard extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
-  const _QuickActions({required this.isDark});
+  const _QuickActions({required this.isDark, required this.unreadCount});
 
   final bool isDark;
+  final int unreadCount;
 
   @override
   Widget build(BuildContext context) {
@@ -458,7 +500,7 @@ class _QuickActions extends StatelessWidget {
                 label: context.loc.notifications,
                 color: Colors.red,
                 isDark: isDark,
-                badgeCount: 3,
+                badgeCount: unreadCount,
                 onTap: () => context.push('/notifications'),
               ),
             ),

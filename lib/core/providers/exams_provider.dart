@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/exam_schedule.dart';
 import '../network/api_client.dart';
@@ -9,7 +10,7 @@ class Exams extends _$Exams {
   @override
   List<ExamSchedule> build() {
     _fetch();
-    return const [];
+    return [];
   }
 
   Future<void> _fetch() async {
@@ -21,19 +22,25 @@ class Exams extends _$Exams {
         state = list.map((item) {
           final String title = item['title'] ?? '';
           
-          // Map title/term/period to ExamTerm and ExamPeriod
+          // تحديد الفصل الدراسي بشكل مرن ودقيق
+          final termStr = item['term']?.toString() ?? '';
           ExamTerm term = ExamTerm.first;
-          if (item['term']?.toString().toLowerCase() == 'second' || title.contains('الثاني')) {
+          if (termStr == '2' || 
+              termStr.toLowerCase() == 'second' || 
+              title.contains('الثاني') || 
+              title.contains('الترم الثاني') || 
+              title.contains('الفصل الثاني')) {
             term = ExamTerm.second;
           }
 
+          // تحديد الفترة الدراسية للاختبار
           ExamPeriod period = ExamPeriod.month1;
-          if (title.contains('الثاني') && !title.contains('الترم')) {
-            period = ExamPeriod.month2;
+          if (title.contains('نهاية') || title.contains('النهائي')) {
+            period = ExamPeriod.finalExam;
           } else if (title.contains('الثالث')) {
             period = ExamPeriod.month3;
-          } else if (title.contains('نهاية') || title.contains('النهائي')) {
-            period = ExamPeriod.finalExam;
+          } else if (title.contains('الثاني')) {
+            period = ExamPeriod.month2;
           }
 
           final List<dynamic> subjectsJson = item['subjects'] ?? [];
@@ -54,10 +61,17 @@ class Exams extends _$Exams {
             subjects: subjects,
           );
         }).toList();
+      } else {
+        state = [];
       }
     } catch (e) {
-      print('Error fetching exam schedules: $e');
+      debugPrint('Error fetching exam schedules: $e');
+      state = [];
     }
+  }
+
+  Future<void> refresh() async {
+    await _fetch();
   }
 
   List<ExamSchedule> getExamsForStudent(String studentId) {

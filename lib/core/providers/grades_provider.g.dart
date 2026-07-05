@@ -20,7 +20,7 @@ final class GradesProvider
         argument: null,
         retry: null,
         name: r'gradesProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,7 +41,7 @@ final class GradesProvider
   }
 }
 
-String _$gradesHash() => r'97345c36e78519fe477d8983181bd89e6b29a034';
+String _$gradesHash() => r'9212b2898ed00dcd1995776b6e81f59ba2c43f05';
 
 abstract class _$Grades extends $Notifier<List<SubjectGrade>> {
   List<SubjectGrade> build();

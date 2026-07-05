@@ -13,39 +13,57 @@ class AbsenceHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
-    final requests = ref.watch(absenceRequestsProvider);
+    final requestsAsync = ref.watch(absenceRequestsProvider);
 
     return Scaffold(
       backgroundColor: bgColor,
       drawer: const AppDrawer(),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-        slivers: [
-          AppSliverHeader(
-            title: context.loc.absenceRequestsHistory,
-            showChildSwitcher: false,
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(absenceRequestsProvider.notifier).refresh(),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            sliver: requests.isEmpty
-                ? SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Text(
-                        context.loc.language == 'ar'
-                            ? 'لا توجد طلبات غياب سابقة'
-                            : 'No previous absence requests',
-                        style: TextStyle(
-                          color: isDark ? Colors.white70 : const Color(0xFF64748B),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+          slivers: [
+            AppSliverHeader(
+              title: context.loc.absenceRequestsHistory,
+              showChildSwitcher: false,
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              sliver: requestsAsync.when(
+                loading: () => const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (err, stack) => SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Text(
+                      'خطأ أثناء تحميل السجل',
+                      style: TextStyle(color: isDark ? Colors.white70 : const Color(0xFF64748B)),
+                    ),
+                  ),
+                ),
+                data: (requests) {
+                  if (requests.isEmpty) {
+                    return SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Text(
+                          context.loc.language == 'ar'
+                              ? 'لا توجد طلبات غياب سابقة'
+                              : 'No previous absence requests',
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
-                  )
-                : SliverList(
+                    );
+                  }
+                  return SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final request = requests[index];
@@ -56,9 +74,12 @@ class AbsenceHistoryScreen extends ConsumerWidget {
                       },
                       childCount: requests.length,
                     ),
-                  ),
-          ),
-        ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

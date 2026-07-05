@@ -9,19 +9,18 @@ part of 'parent_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(currentParent)
+@ProviderFor(CurrentParent)
 final currentParentProvider = CurrentParentProvider._();
 
 final class CurrentParentProvider
-    extends $FunctionalProvider<ParentProfile, ParentProfile, ParentProfile>
-    with $Provider<ParentProfile> {
+    extends $NotifierProvider<CurrentParent, ParentProfile> {
   CurrentParentProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'currentParentProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -31,13 +30,7 @@ final class CurrentParentProvider
 
   @$internal
   @override
-  $ProviderElement<ParentProfile> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  ParentProfile create(Ref ref) {
-    return currentParent(ref);
-  }
+  CurrentParent create() => CurrentParent();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(ParentProfile value) {
@@ -48,4 +41,22 @@ final class CurrentParentProvider
   }
 }
 
-String _$currentParentHash() => r'5272d6ca09ffc2e6abaa7f7560f7c43003640b31';
+String _$currentParentHash() => r'5bfc1e6797bc343b0de00646606bce9100e052b5';
+
+abstract class _$CurrentParent extends $Notifier<ParentProfile> {
+  ParentProfile build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<ParentProfile, ParentProfile>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ParentProfile, ParentProfile>,
+              ParentProfile,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

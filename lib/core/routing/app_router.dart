@@ -11,15 +11,21 @@ import '../../features/attendance/presentation/screens/absence_request_screen.da
 import '../../features/attendance/presentation/screens/absence_history_screen.dart';
 import '../../features/fees/presentation/screens/fees_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/notifications/presentation/screens/alerts_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/exams/presentation/screens/exams_screen.dart';
 import '../../features/schedule/presentation/screens/schedule_screen.dart';
 
+import 'package:flutter/material.dart';
+
 part 'app_router.g.dart';
+
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 @riverpod
 GoRouter appRouter(Ref ref) {
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
@@ -52,6 +58,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/alerts',
+        builder: (context, state) => const AlertsScreen(),
       ),
       GoRoute(
         path: '/settings',

@@ -36,17 +36,19 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
       return;
     }
 
+    if (_reasonController.text.trim().isEmpty) {
+      _showErrorSnackBar('يرجى كتابة سبب الغياب');
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
-      // Mocking submission
-      await Future.delayed(const Duration(seconds: 1));
-
       if (!mounted) return;
 
       final student = ref.read(childrenProvider).firstWhere((s) => s.id == selectedStudentId);
       final newRequest = AbsenceRequest(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: '',
         studentId: selectedStudentId!,
         studentName: student.name,
         date: selectedDate ?? DateTime.now(),
@@ -54,11 +56,18 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
         reason: _reasonController.text,
         status: AbsenceRequestStatus.pending,
       );
-      ref.read(absenceRequestsProvider.notifier).addRequest(newRequest);
 
-      _showSuccessSnackBar(context.loc.absenceRequestSentSuccessfully);
-      await Future.delayed(const Duration(milliseconds: 1000));
-      if (mounted) context.pop();
+      final success = await ref.read(absenceRequestsProvider.notifier).addRequest(newRequest);
+
+      if (!mounted) return;
+
+      if (success) {
+        _showSuccessSnackBar(context.loc.absenceRequestSentSuccessfully);
+        await Future.delayed(const Duration(milliseconds: 1000));
+        if (mounted) context.pop();
+      } else {
+        _showErrorSnackBar(context.loc.errorSendingAbsenceRequest);
+      }
     } catch (e) {
       if (mounted) {
         _showErrorSnackBar(context.loc.errorSendingAbsenceRequest);

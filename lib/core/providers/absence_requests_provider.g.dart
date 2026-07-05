@@ -13,7 +13,7 @@ part of 'absence_requests_provider.dart';
 final absenceRequestsProvider = AbsenceRequestsProvider._();
 
 final class AbsenceRequestsProvider
-    extends $NotifierProvider<AbsenceRequests, List<AbsenceRequest>> {
+    extends $AsyncNotifierProvider<AbsenceRequests, List<AbsenceRequest>> {
   AbsenceRequestsProvider._()
     : super(
         from: null,
@@ -31,29 +31,26 @@ final class AbsenceRequestsProvider
   @$internal
   @override
   AbsenceRequests create() => AbsenceRequests();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(List<AbsenceRequest> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<List<AbsenceRequest>>(value),
-    );
-  }
 }
 
-String _$absenceRequestsHash() => r'102a061ce92afdc586886cfc69708b107da3048f';
+String _$absenceRequestsHash() => r'c491b81a7e27443ab6d8e4977abd755017c010a2';
 
-abstract class _$AbsenceRequests extends $Notifier<List<AbsenceRequest>> {
-  List<AbsenceRequest> build();
+abstract class _$AbsenceRequests extends $AsyncNotifier<List<AbsenceRequest>> {
+  FutureOr<List<AbsenceRequest>> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<List<AbsenceRequest>, List<AbsenceRequest>>;
+    final ref =
+        this.ref
+            as $Ref<AsyncValue<List<AbsenceRequest>>, List<AbsenceRequest>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<List<AbsenceRequest>, List<AbsenceRequest>>,
-              List<AbsenceRequest>,
+              AnyNotifier<
+                AsyncValue<List<AbsenceRequest>>,
+                List<AbsenceRequest>
+              >,
+              AsyncValue<List<AbsenceRequest>>,
               Object?,
               Object?
             >;

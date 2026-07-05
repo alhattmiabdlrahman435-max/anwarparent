@@ -20,7 +20,7 @@ final class ClassSchedulesProvider
         argument: null,
         retry: null,
         name: r'classSchedulesProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,7 +41,7 @@ final class ClassSchedulesProvider
   }
 }
 
-String _$classSchedulesHash() => r'7ff89896c50e2feca64a47dd29ac68bd294fc802';
+String _$classSchedulesHash() => r'546e5a295949a8e19775e0d59e9b0a795824ad03';
 
 abstract class _$ClassSchedules extends $Notifier<List<ClassSchedule>> {
   List<ClassSchedule> build();

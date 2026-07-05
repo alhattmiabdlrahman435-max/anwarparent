@@ -20,7 +20,7 @@ final class AssignmentsProvider
         argument: null,
         retry: null,
         name: r'assignmentsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,7 +41,7 @@ final class AssignmentsProvider
   }
 }
 
-String _$assignmentsHash() => r'843e97b70ef0b89d6ee3149aedc85750b64620c6';
+String _$assignmentsHash() => r'3ba82f037ede029af69744d31154ab0b35128f16';
 
 abstract class _$Assignments extends $Notifier<List<Assignment>> {
   List<Assignment> build();
