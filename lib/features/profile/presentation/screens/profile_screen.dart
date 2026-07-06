@@ -385,11 +385,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           } catch (e) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('كلمة المرور الحالية غير صحيحة'),
+                                SnackBar(
+                                  content: const Text('كلمة المرور الحالية غير صحيحة'),
                                   backgroundColor: AppColors.error,
                                   behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(borderRadius: null),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
                               );
                             }

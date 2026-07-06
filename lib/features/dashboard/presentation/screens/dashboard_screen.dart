@@ -10,11 +10,27 @@ import '../../../../core/providers/parent_provider.dart';
 import '../../../../core/extensions/localization_extension.dart';
 import '../../../../core/providers/notifications_provider.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(childrenProvider.notifier).refresh();
+        ref.read(notificationsProvider.notifier).refresh();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final students = ref.watch(childrenProvider);
     final notificationsAsync = ref.watch(notificationsProvider);
     final unreadCount = notificationsAsync.maybeWhen(
@@ -36,9 +52,7 @@ class DashboardScreen extends ConsumerWidget {
           await ref.read(notificationsProvider.notifier).refresh();
         },
         child: CustomScrollView(
-          physics: const ClampingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
+          physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             AppSliverHeader(title: context.loc.home, showChildSwitcher: false),
             SliverPadding(

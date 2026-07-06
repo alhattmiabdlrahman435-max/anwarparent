@@ -20,7 +20,7 @@ final class ApiClientProvider extends $FunctionalProvider<Dio, Dio, Dio>
         argument: null,
         retry: null,
         name: r'apiClientProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -47,4 +47,4 @@ final class ApiClientProvider extends $FunctionalProvider<Dio, Dio, Dio>
   }
 }
 
-String _$apiClientHash() => r'e05d41201f5c48b2d18df0556825c92f9ef74e14';
+String _$apiClientHash() => r'7de845fd150c0b9235bebf0ea8374ed53e3590a1';

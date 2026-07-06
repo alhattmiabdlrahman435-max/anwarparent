@@ -18,15 +18,48 @@ import '../../features/schedule/presentation/screens/schedule_screen.dart';
 
 import 'package:flutter/material.dart';
 
+import '../../features/auth/presentation/providers/auth_provider.dart';
+import 'package:flutter/foundation.dart';
+
 part 'app_router.g.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
+class RouterTransitionNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterTransitionNotifier(this._ref) {
+    _ref.listen(authProvider, (previous, next) {
+      notifyListeners();
+    });
+  }
+}
+
 @riverpod
 GoRouter appRouter(Ref ref) {
+  final notifier = RouterTransitionNotifier(ref);
+
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
+    refreshListenable: notifier,
+    redirect: (context, state) {
+      final authState = ref.read(authProvider);
+      final isLoggedIn = authState.value ?? false;
+      final location = state.uri.toString();
+
+      // If not logged in and not on splash or login page, redirect to login
+      if (!isLoggedIn && location != '/splash' && location != '/') {
+        return '/';
+      }
+
+      // If logged in and on splash or login page, redirect to dashboard
+      if (isLoggedIn && (location == '/splash' || location == '/')) {
+        return '/dashboard';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/', builder: (context, state) => const LoginScreen()),

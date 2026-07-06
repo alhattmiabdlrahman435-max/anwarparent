@@ -7,7 +7,7 @@ import 'parent_provider.dart';
 
 part 'absence_requests_provider.g.dart';
 
-@Riverpod(keepAlive: true)
+@riverpod
 class AbsenceRequests extends _$AbsenceRequests {
   @override
   FutureOr<List<AbsenceRequest>> build() async {

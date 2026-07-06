@@ -20,7 +20,7 @@ final class AbsenceRequestsProvider
         argument: null,
         retry: null,
         name: r'absenceRequestsProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -33,7 +33,7 @@ final class AbsenceRequestsProvider
   AbsenceRequests create() => AbsenceRequests();
 }
 
-String _$absenceRequestsHash() => r'c491b81a7e27443ab6d8e4977abd755017c010a2';
+String _$absenceRequestsHash() => r'9f476451d0ac37a0041b298e954e6d33027013dc';
 
 abstract class _$AbsenceRequests extends $AsyncNotifier<List<AbsenceRequest>> {
   FutureOr<List<AbsenceRequest>> build();
