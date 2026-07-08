@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:dio/dio.dart';
 import '../models/absence_request.dart';
 import '../network/api_client.dart';
 import 'parent_provider.dart';
@@ -29,7 +30,7 @@ class AbsenceRequests extends _$AbsenceRequests {
     return [];
   }
 
-  Future<bool> addRequest(AbsenceRequest request) async {
+  Future<String?> addRequest(AbsenceRequest request) async {
     try {
       final dio = ref.read(apiClientProvider);
       
@@ -42,7 +43,7 @@ class AbsenceRequests extends _$AbsenceRequests {
 
       if (parentId.isEmpty) {
         debugPrint('Error: parent_id is empty, cannot submit absence request');
-        return false;
+        return 'عذراً، لم يتم العثور على معرف ولي الأمر. يرجى تسجيل الخروج والولوج مجدداً.';
       }
       
       final response = await dio.post(
@@ -54,12 +55,18 @@ class AbsenceRequests extends _$AbsenceRequests {
         // Reload state to show the new request from database
         state = const AsyncValue.loading();
         state = await AsyncValue.guard(() => _loadRequests());
-        return true;
+        return null;
       }
+      return response.data?['message'] ?? 'فشل إرسال طلب الغياب من الخادم';
     } catch (e) {
       debugPrint('Error adding absence request: $e');
+      if (e is DioException) {
+        final serverMessage = e.response?.data?['message'];
+        if (serverMessage != null) return serverMessage.toString();
+        return 'خطأ في الاتصال بالخادم: ${e.message}';
+      }
+      return 'حدث خطأ غير متوقع: $e';
     }
-    return false;
   }
 
   Future<void> refresh() async {

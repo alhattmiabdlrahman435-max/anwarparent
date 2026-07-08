@@ -75,20 +75,20 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
         status: AbsenceRequestStatus.pending,
       );
 
-      final success = await ref.read(absenceRequestsProvider.notifier).addRequest(newRequest);
+      final errorMessage = await ref.read(absenceRequestsProvider.notifier).addRequest(newRequest);
 
       if (!mounted) return;
 
-      if (success) {
+      if (errorMessage == null) {
         _showSuccessSnackBar(context.loc.absenceRequestSentSuccessfully);
         await Future.delayed(const Duration(milliseconds: 1000));
         if (mounted) context.pop();
       } else {
-        _showErrorSnackBar(context.loc.errorSendingAbsenceRequest);
+        _showErrorSnackBar(errorMessage);
       }
     } catch (e) {
       if (mounted) {
-        _showErrorSnackBar(context.loc.errorSendingAbsenceRequest);
+        _showErrorSnackBar('حدث خطأ غير متوقع: $e');
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
