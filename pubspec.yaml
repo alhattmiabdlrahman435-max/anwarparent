@@ -58,6 +58,7 @@ dependencies:
 
 dependency_overrides:
   sqflite_android: 2.4.1
+  path_provider_foundation: 2.5.1
 
 dev_dependencies:
   flutter_test:

@@ -7,6 +7,7 @@ import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/providers/children_provider.dart';
 import '../../../../core/models/student.dart';
 import '../../../../core/providers/parent_provider.dart';
+import '../../../../core/widgets/student_avatar.dart';
 import '../../../../core/extensions/localization_extension.dart';
 import '../../../../core/providers/notifications_provider.dart';
 
@@ -381,18 +382,11 @@ class _ChildQuickCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: const Color(0xFF062A5A).withValues(alpha: 0.1),
-              child: Text(
-                student.name.isNotEmpty ? student.name.substring(0, 1) : '?',
-                style: TextStyle(
-                  color: isDark ? Colors.white : const Color(0xFF062A5A),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'GoogleSans',
-                ),
-              ),
+            StudentAvatar(
+              photoUrl: student.photoUrl,
+              name: student.name,
+              size: 48,
+              isSelected: true,
             ),
             const SizedBox(width: 16),
             Expanded(

@@ -6,6 +6,7 @@ import '../../../../core/providers/children_provider.dart';
 import '../../../../core/models/student.dart';
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
+import '../../../../core/widgets/student_avatar.dart';
 import '../../../../core/extensions/localization_extension.dart';
 
 class ChildrenScreen extends ConsumerWidget {
@@ -139,38 +140,11 @@ class ChildrenScreen extends ConsumerWidget {
                 textDirection: TextDirection.rtl,
                 children: [
                   // Right: Avatar with Grade-based Gradient
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: isSelected
-                            ? [primaryColor, const Color(0xFF14448A)]
-                            : [const Color(0xFF64748B), const Color(0xFF94A3B8)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        if (isSelected)
-                          BoxShadow(
-                            color: primaryColor.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        student.name.isNotEmpty ? student.name.substring(0, 1) : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'GoogleSans',
-                        ),
-                      ),
-                    ),
+                  StudentAvatar(
+                    photoUrl: student.photoUrl,
+                    name: student.name,
+                    size: 56,
+                    isSelected: isSelected,
                   ),
                   const SizedBox(width: 16),
                   

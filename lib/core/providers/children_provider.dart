@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/student.dart';
 import '../network/api_client.dart';
+import '../utils/constants.dart';
 import 'parent_provider.dart';
 
 part 'children_provider.g.dart';
@@ -37,6 +38,7 @@ class Children extends _$Children {
             name: item['name_ar'] ?? '',
             grade: gradeName,
             classId: item['class_id']?.toString() ?? '',
+            photoUrl: AppConstants.normalizeUrl(item['photo_url']),
           );
         }).toList();
 

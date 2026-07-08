@@ -15,7 +15,7 @@ class Assignments extends _$Assignments {
   }
 
   Future<void> _loadFromBackend() async {
-    final parent = ref.watch(currentParentProvider);
+    final parent = ref.read(currentParentProvider);
     if (parent.id.isEmpty) {
       if (ref.mounted) {
         state = [];

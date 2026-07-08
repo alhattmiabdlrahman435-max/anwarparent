@@ -456,4 +456,21 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get syllabusNote => 'المقرر/الملاحظة';
+
+  @override
+  String get alerts => 'البلاغات';
+
+  @override
+  String get highPriority => 'عالية الأهمية';
+
+  @override
+  String get noAlerts => 'لا توجد بلاغات حالياً';
+
+  @override
+  String get alertsSubtitle => 'ستظهر هنا بلاغات المعلمين المتعلقة بطفلك';
+
+  @override
+  String errorLoadingAlerts(String error) {
+    return 'حدث خطأ أثناء تحميل البلاغات: $error';
+  }
 }

@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/widgets/app_drawer.dart';
+import '../../../../core/extensions/localization_extension.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/providers/notifications_provider.dart';
 import '../../../../core/models/app_notification.dart';
+import '../../../../core/providers/children_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -17,6 +19,7 @@ class AlertsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(notificationsProvider);
+    final currentChild = ref.watch(currentChildProvider);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
@@ -37,7 +40,8 @@ class AlertsScreen extends ConsumerWidget {
           ),
           slivers: [
             AppSliverHeader(
-              title: 'البلاغات',
+              title: context.loc.alerts,
+              showChildSwitcher: true,
               trailing: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -47,18 +51,18 @@ class AlertsScreen extends ConsumerWidget {
                     color: alertColor.withValues(alpha: 0.3),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    const Icon(
                       CupertinoIcons.exclamationmark_shield_fill,
                       size: 14,
                       color: alertColor,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
-                      'عالية الأهمية',
-                      style: TextStyle(
+                      context.loc.highPriority,
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: alertColor,
@@ -76,16 +80,25 @@ class AlertsScreen extends ConsumerWidget {
               error: (err, stack) => SliverFillRemaining(
                 child: Center(
                   child: Text(
-                    'حدث خطأ أثناء تحميل البلاغات: $err',
+                    context.loc.errorLoadingAlerts(err.toString()),
                     style: TextStyle(color: textColor, fontFamily: 'GoogleSans'),
                   ),
                 ),
               ),
               data: (allNotifications) {
                 // Filter only alert/report type notifications
-                final alerts = allNotifications
+                var alerts = allNotifications
                     .where((n) => n.type == 'alert' || n.type == 'report')
                     .toList();
+
+                if (currentChild != null) {
+                  alerts = alerts.where((n) {
+                    if (n.targetType == 'all_parents') return true;
+                    if (n.targetType == 'by_student' && n.targetId == currentChild.id) return true;
+                    if (n.targetType == 'by_class' && n.targetId == currentChild.classId) return true;
+                    return false;
+                  }).toList();
+                }
 
                 if (alerts.isEmpty) {
                   return SliverFillRemaining(
@@ -107,7 +120,7 @@ class AlertsScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            'لا توجد بلاغات حالياً',
+                            context.loc.noAlerts,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -117,10 +130,10 @@ class AlertsScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'ستظهر هنا بلاغات المعلمين المتعلقة بطفلك',
+                            context.loc.alertsSubtitle,
                             style: TextStyle(
-                              fontSize: 13,
-                              color: subTextColor,
+                              fontSize: 14,
+                              color: isDark ? Colors.white60 : Colors.black54,
                               fontFamily: 'GoogleSans',
                             ),
                             textAlign: TextAlign.center,

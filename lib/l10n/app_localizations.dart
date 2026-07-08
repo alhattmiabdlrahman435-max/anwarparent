@@ -973,6 +973,36 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'المقرر/الملاحظة'**
   String get syllabusNote;
+
+  /// No description provided for @alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'البلاغات'**
+  String get alerts;
+
+  /// No description provided for @highPriority.
+  ///
+  /// In ar, this message translates to:
+  /// **'عالية الأهمية'**
+  String get highPriority;
+
+  /// No description provided for @noAlerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد بلاغات حالياً'**
+  String get noAlerts;
+
+  /// No description provided for @alertsSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستظهر هنا بلاغات المعلمين المتعلقة بطفلك'**
+  String get alertsSubtitle;
+
+  /// No description provided for @errorLoadingAlerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدث خطأ أثناء تحميل البلاغات: {error}'**
+  String errorLoadingAlerts(String error);
 }
 
 class _AppLocalizationsDelegate

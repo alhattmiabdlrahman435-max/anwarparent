@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../utils/constants.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
+import 'package:flutter/foundation.dart';
 
 part 'api_client.g.dart';
 
@@ -41,8 +42,10 @@ Dio apiClient(Ref ref) {
     ),
   );
 
-  // Add interceptors for logging
-  dio.interceptors.add(LogInterceptor(responseBody: true, requestBody: true));
+  // Add interceptors for logging only in debug mode
+  if (kDebugMode) {
+    dio.interceptors.add(LogInterceptor(responseBody: true, requestBody: true));
+  }
 
   return dio;
 }

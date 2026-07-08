@@ -460,4 +460,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syllabusNote => 'Syllabus / Note';
+
+  @override
+  String get alerts => 'Alerts';
+
+  @override
+  String get highPriority => 'High Priority';
+
+  @override
+  String get noAlerts => 'No alerts currently';
+
+  @override
+  String get alertsSubtitle =>
+      'Teacher alerts regarding your child will appear here';
+
+  @override
+  String errorLoadingAlerts(String error) {
+    return 'An error occurred while loading alerts: $error';
+  }
 }

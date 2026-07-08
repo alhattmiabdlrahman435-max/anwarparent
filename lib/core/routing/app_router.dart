@@ -19,7 +19,6 @@ import '../../features/schedule/presentation/screens/schedule_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/auth/presentation/providers/auth_provider.dart';
-import 'package:flutter/foundation.dart';
 
 part 'app_router.g.dart';
 

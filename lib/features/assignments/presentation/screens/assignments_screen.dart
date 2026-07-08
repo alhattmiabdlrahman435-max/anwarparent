@@ -442,11 +442,13 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       drawer: const AppDrawer(),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-        slivers: [
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(assignmentsProvider.notifier).refresh(),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
           AppSliverHeader(title: context.loc.schoolAssignments, showChildSwitcher: true),
 
           // Custom Calendar
@@ -731,6 +733,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
               ),
             ),
         ],
+        ),
       ),
     );
   }

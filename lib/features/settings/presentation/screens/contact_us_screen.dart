@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/extensions/localization_extension.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/network/api_client.dart';
 
-class ContactUsScreen extends StatefulWidget {
+class ContactUsScreen extends ConsumerStatefulWidget {
   const ContactUsScreen({super.key});
 
   @override
-  State<ContactUsScreen> createState() => _ContactUsScreenState();
+  ConsumerState<ContactUsScreen> createState() => _ContactUsScreenState();
 }
 
-class _ContactUsScreenState extends State<ContactUsScreen> {
+class _ContactUsScreenState extends ConsumerState<ContactUsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -56,37 +58,55 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(seconds: 1)); // Simulate api call
-    setState(() => _isSubmitting = false);
+    
+    try {
+      final dio = ref.read(apiClientProvider);
+      // TODO: Verify the endpoint URL for contact-us
+      await dio.post('contact-us', data: {
+        'name': _nameController.text,
+        'phone': _phoneController.text,
+        'message': _messageController.text,
+        'type': _selectedType,
+      });
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    // Show success dialog
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            const Icon(Icons.check_circle, color: AppColors.success, size: 28),
-            const SizedBox(width: 8),
-            const Text('تم الإرسال بنجاح'),
+      // Show success dialog
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(Icons.check_circle, color: AppColors.success, size: 28),
+              const SizedBox(width: 8),
+              const Text('تم الإرسال بنجاح'),
+            ],
+          ),
+          content: const Text('شكراً لتواصلك معنا. تم استلام رسالتك وسيتم الرد عليك في أقرب وقت ممكن.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                _nameController.clear();
+                _phoneController.clear();
+                _messageController.clear();
+              },
+              child: const Text('حسناً'),
+            ),
           ],
         ),
-        content: const Text('شكراً لتواصلك معنا. تم استلام رسالتك وسيتم الرد عليك في أقرب وقت ممكن.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-              _nameController.clear();
-              _phoneController.clear();
-              _messageController.clear();
-            },
-            child: const Text('حسناً'),
-          ),
-        ],
-      ),
-    );
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('حدث خطأ أثناء الإرسال. يرجى المحاولة لاحقاً.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
   @override

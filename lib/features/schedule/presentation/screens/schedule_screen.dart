@@ -500,7 +500,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                       borderRadius: BorderRadius.circular(16),
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         child: DataTable(
                           columnSpacing: 24,
                           headingRowColor: WidgetStateProperty.all(

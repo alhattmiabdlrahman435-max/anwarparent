@@ -28,19 +28,10 @@ class Exams extends _$Exams {
           if (termStr == '2' || 
               termStr.toLowerCase() == 'second' || 
               termStr.toLowerCase() == 'term2' ||
-              termStr.contains('الثاني')) {
+              termStr.contains('الثاني') || 
+              termStr.contains('الترم الثاني') || 
+              termStr.contains('الفصل الثاني')) {
             term = ExamTerm.second;
-          } else if (termStr == '1' || 
-              termStr.toLowerCase() == 'first' || 
-              termStr.toLowerCase() == 'term1' ||
-              termStr.contains('الأول')) {
-            term = ExamTerm.first;
-          } else {
-            // Fallback to title only if termStr is empty/unknown
-            if (title.contains('الترم الثاني') || 
-                title.contains('الفصل الثاني')) {
-              term = ExamTerm.second;
-            }
           }
 
           // تحديد الفترة الدراسية للاختبار

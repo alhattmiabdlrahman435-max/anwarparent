@@ -173,5 +173,17 @@
   "subject": "المادة",
   "date": "التاريخ",
   "time": "الوقت",
-  "syllabusNote": "المقرر/الملاحظة"
+  "syllabusNote": "المقرر/الملاحظة",
+  "alerts": "البلاغات",
+  "highPriority": "عالية الأهمية",
+  "noAlerts": "لا توجد بلاغات حالياً",
+  "alertsSubtitle": "ستظهر هنا بلاغات المعلمين المتعلقة بطفلك",
+  "errorLoadingAlerts": "حدث خطأ أثناء تحميل البلاغات: {error}",
+  "@errorLoadingAlerts": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

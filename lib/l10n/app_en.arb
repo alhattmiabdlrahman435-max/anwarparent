@@ -173,5 +173,17 @@
   "subject": "Subject",
   "date": "Date",
   "time": "Time",
-  "syllabusNote": "Syllabus / Note"
+  "syllabusNote": "Syllabus / Note",
+  "alerts": "Alerts",
+  "highPriority": "High Priority",
+  "noAlerts": "No alerts currently",
+  "alertsSubtitle": "Teacher alerts regarding your child will appear here",
+  "errorLoadingAlerts": "An error occurred while loading alerts: {error}",
+  "@errorLoadingAlerts": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

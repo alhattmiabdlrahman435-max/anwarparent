@@ -235,14 +235,13 @@ class AppDrawer extends ConsumerWidget {
                   onTap: () => _navigate(context, currentRoute, '/fees'),
                 ),
                 _DrawerItem(
-                  title: 'البلاغات',
+                  title: context.loc.alerts,
                   icon: CupertinoIcons.exclamationmark_shield_fill,
                   route: '/alerts',
                   currentRoute: currentRoute,
                   isDark: isDark,
-                  primaryColor: const Color(0xFFDC2626),
+                  primaryColor: primaryColor,
                   onTap: () => _navigate(context, currentRoute, '/alerts'),
-                  isHighPriority: true,
                 ),
                 _DrawerItem(
                   title: context.loc.notifications,
@@ -365,7 +364,6 @@ class _DrawerItem extends StatelessWidget {
     required this.isDark,
     required this.primaryColor,
     required this.onTap,
-    this.isHighPriority = false,
   });
 
   final String title;
@@ -375,7 +373,6 @@ class _DrawerItem extends StatelessWidget {
   final bool isDark;
   final Color primaryColor;
   final VoidCallback onTap;
-  final bool isHighPriority;
 
   @override
   Widget build(BuildContext context) {
@@ -385,17 +382,13 @@ class _DrawerItem extends StatelessWidget {
         ? (isDark
               ? Colors.white.withValues(alpha: 0.1)
               : primaryColor.withValues(alpha: 0.08))
-        : (isHighPriority
-              ? primaryColor.withValues(alpha: isDark ? 0.1 : 0.06)
-              : Colors.transparent);
+        : Colors.transparent;
 
     final Color foregroundColor = isSelected
         ? (isDark ? Colors.amber : primaryColor)
-        : (isHighPriority
-              ? primaryColor
-              : (isDark ? Colors.white70 : const Color(0xFF64748B)));
+        : (isDark ? Colors.white70 : const Color(0xFF64748B));
 
-    final FontWeight fontWeight = (isSelected || isHighPriority)
+    final FontWeight fontWeight = isSelected
         ? FontWeight.w700
         : FontWeight.w500;
 

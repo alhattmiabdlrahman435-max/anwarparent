@@ -4,6 +4,8 @@ import '../../l10n/app_localizations.dart';
 extension LocalizationExtension on BuildContext {
   AppLocalizations get loc => AppLocalizations.of(this)!;
 
+  // TODO: REMOVE BEFORE LAUNCH. The UI should display dynamic content (like student names, assignments)
+  // directly from the backend rather than using this hardcoded mock translation switch.
   String translateMock(String mock) {
     switch (mock) {
       case 'الرياضيات':

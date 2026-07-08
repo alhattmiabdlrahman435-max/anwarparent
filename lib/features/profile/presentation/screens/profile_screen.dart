@@ -507,8 +507,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   backgroundImage: _pickedImagePath != null
                                       ? FileImage(File(_pickedImagePath!)) as ImageProvider
                                       : (parent.avatarUrl != null && parent.avatarUrl!.length > 5
-                                          ? NetworkImage(parent.avatarUrl!)
-                                          : const NetworkImage('https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200')) as ImageProvider,
+                                          ? NetworkImage(parent.avatarUrl!) as ImageProvider
+                                          : const AssetImage('assets/icons/app_icon.jpeg') as ImageProvider),
                                 ),
                               ),
                               Positioned(
@@ -584,7 +584,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             icon: PhosphorIcons.identificationCard(PhosphorIconsStyle.duotone),
                             label: 'الرقم الوطني (اسم المستخدم)',
                             value: parent.nationalId,
-                            controller: _addressController, // Dummy
+                            controller: _addressController,
                             isEditableField: false,
                             isDark: isDark,
                             textColor: textColor,

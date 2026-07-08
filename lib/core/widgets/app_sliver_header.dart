@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/children_provider.dart';
 import '../models/student.dart';
 import '../extensions/localization_extension.dart';
+import 'student_avatar.dart';
 
 class AppSliverHeader extends ConsumerWidget {
   final String title;
@@ -171,14 +172,11 @@ class AppSliverHeader extends ConsumerWidget {
                 ...children.map((child) {
                   final isSelected = child.id == currentChild?.id;
                   return ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: isSelected
-                          ? const Color(0xFF062A5A)
-                          : Colors.grey.shade200,
-                      child: Icon(
-                        CupertinoIcons.person_solid,
-                        color: isSelected ? Colors.white : Colors.grey.shade500,
-                      ),
+                    leading: StudentAvatar(
+                      photoUrl: child.photoUrl,
+                      name: child.name,
+                      size: 36,
+                      isSelected: isSelected,
                     ),
                     title: Text(
                       context.translateMock(child.name),

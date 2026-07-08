@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/children_provider.dart';
 import '../../../../core/models/student.dart';
 import '../../../../core/models/absence_request.dart';
+import '../../../../core/widgets/student_avatar.dart';
 import '../../../../core/providers/absence_requests_provider.dart';
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
@@ -237,18 +238,11 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDark ? Colors.white12 : Colors.grey[100],
-              ),
-              child: const Icon(
-                Icons.person,
-                size: 20,
-                color: Colors.grey,
-              ),
+            StudentAvatar(
+              photoUrl: student.photoUrl,
+              name: student.name,
+              size: 36,
+              isSelected: selected,
             ),
             const SizedBox(width: 16),
             Expanded(

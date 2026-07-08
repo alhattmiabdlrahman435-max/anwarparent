@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/providers/children_provider.dart';
 import '../../../../core/models/student.dart';
+import '../../../../core/widgets/student_avatar.dart';
 import '../../../../core/providers/attendance_provider.dart';
 import '../../../../core/models/attendance.dart';
 import '../../../../core/extensions/localization_extension.dart';
@@ -408,18 +409,11 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDark ? Colors.white12 : Colors.grey[100],
-              ),
-              child: const Icon(
-                CupertinoIcons.person_solid,
-                size: 20,
-                color: Colors.grey,
-              ),
+            StudentAvatar(
+              photoUrl: child.photoUrl,
+              name: child.name,
+              size: 36,
+              isSelected: isSelected,
             ),
             const SizedBox(width: 16),
             Expanded(

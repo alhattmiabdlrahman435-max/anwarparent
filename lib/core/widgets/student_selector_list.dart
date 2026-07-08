@@ -1,10 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/children_provider.dart';
 import '../models/student.dart';
 import '../extensions/localization_extension.dart';
+import 'student_avatar.dart';
 
 class StudentSelectorList extends ConsumerWidget {
   const StudentSelectorList({super.key});
@@ -83,18 +83,11 @@ class StudentSelectorList extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDark ? Colors.white12 : Colors.grey[100],
-              ),
-              child: const Icon(
-                CupertinoIcons.person_solid,
-                size: 20,
-                color: Colors.grey,
-              ),
+            StudentAvatar(
+              photoUrl: child.photoUrl,
+              name: child.name,
+              size: 36,
+              isSelected: isSelected,
             ),
             const SizedBox(width: 16),
             Expanded(
