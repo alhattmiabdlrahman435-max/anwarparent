@@ -478,4 +478,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String errorLoadingAlerts(String error) {
     return 'An error occurred while loading alerts: $error';
   }
+
+  @override
+  String get duplicateAbsenceRequest =>
+      'An absence request for this student on this date already exists';
 }

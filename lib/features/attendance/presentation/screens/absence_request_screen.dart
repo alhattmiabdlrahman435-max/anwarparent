@@ -42,6 +42,23 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
       return;
     }
 
+    // Check for duplicate requests for the same student on the same date
+    final existingRequests = ref.read(absenceRequestsProvider).value;
+    if (existingRequests != null) {
+      final selectedDateOnly = selectedDate ?? DateTime.now();
+      final hasDuplicate = existingRequests.any((req) {
+        return req.studentId == selectedStudentId &&
+            req.date.year == selectedDateOnly.year &&
+            req.date.month == selectedDateOnly.month &&
+            req.date.day == selectedDateOnly.day;
+      });
+
+      if (hasDuplicate) {
+        _showErrorSnackBar(context.loc.duplicateAbsenceRequest);
+        return;
+      }
+    }
+
     setState(() => _isSubmitting = true);
 
     try {

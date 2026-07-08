@@ -185,5 +185,6 @@
         "type": "String"
       }
     }
-  }
+  },
+  "duplicateAbsenceRequest": "An absence request for this student on this date already exists"
 }

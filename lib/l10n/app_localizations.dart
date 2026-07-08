@@ -1003,6 +1003,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'حدث خطأ أثناء تحميل البلاغات: {error}'**
   String errorLoadingAlerts(String error);
+
+  /// No description provided for @duplicateAbsenceRequest.
+  ///
+  /// In ar, this message translates to:
+  /// **'لقد قمت بتقديم طلب غياب لهذا الطالب في هذا التاريخ مسبقاً'**
+  String get duplicateAbsenceRequest;
 }
 
 class _AppLocalizationsDelegate

@@ -473,4 +473,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String errorLoadingAlerts(String error) {
     return 'حدث خطأ أثناء تحميل البلاغات: $error';
   }
+
+  @override
+  String get duplicateAbsenceRequest =>
+      'لقد قمت بتقديم طلب غياب لهذا الطالب في هذا التاريخ مسبقاً';
 }
