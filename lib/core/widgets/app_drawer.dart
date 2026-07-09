@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/localization_extension.dart';
 import '../../../../core/providers/parent_provider.dart';
+import '../utils/constants.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -76,16 +77,38 @@ class AppDrawer extends ConsumerWidget {
                             backgroundColor: primaryColor.withValues(
                               alpha: 0.2,
                             ),
-                            child: parent.avatarUrl != null && parent.avatarUrl!.isNotEmpty
-                                ? Text(
-                                    parent.avatarUrl!,
+                            child: () {
+                              final normalizedUrl = AppConstants.normalizeUrl(parent.avatarUrl);
+                              if (normalizedUrl != null && normalizedUrl.isNotEmpty) {
+                                if (normalizedUrl.length <= 4) {
+                                  return Text(
+                                    normalizedUrl,
                                     style: const TextStyle(fontSize: 40),
-                                  )
-                                : Icon(
-                                    CupertinoIcons.person_solid,
-                                    size: 45,
-                                    color: isDark ? Colors.white : primaryColor,
-                                  ),
+                                  );
+                                } else {
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(42),
+                                    child: Image.network(
+                                      normalizedUrl,
+                                      width: 84,
+                                      height: 84,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Icon(
+                                        CupertinoIcons.person_solid,
+                                        size: 45,
+                                        color: isDark ? Colors.white : primaryColor,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                return Icon(
+                                  CupertinoIcons.person_solid,
+                                  size: 45,
+                                  color: isDark ? Colors.white : primaryColor,
+                                );
+                              }
+                            }(),
                           ),
                         ),
                         Container(

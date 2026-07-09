@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
+import '../../../../core/utils/constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/providers/children_provider.dart';
 import '../../../../core/providers/parent_provider.dart';
@@ -157,6 +159,60 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  Future<void> _uploadAvatar(String path) async {
+    try {
+      final dio = ref.read(apiClientProvider);
+      
+      final formData = FormData.fromMap({
+        'photo': await MultipartFile.fromFile(
+          path,
+          filename: path.split('/').last,
+        ),
+      });
+
+      final response = await dio.post(
+        'user/update-photo',
+        data: formData,
+      );
+
+      if (response.data != null && response.data['success'] == true) {
+        final newUrl = response.data['photo_url'];
+        final parent = ref.read(currentParentProvider);
+        
+        await ref.read(currentParentProvider.notifier).setProfile(
+          id: parent.id,
+          name: parent.name,
+          phoneNumber: parent.phoneNumber,
+          nationalId: parent.nationalId,
+          avatarUrl: newUrl,
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('تم تحديث صورة الملف الشخصي بنجاح'),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error uploading avatar: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ أثناء رفع الصورة الشخصية: $e'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     try {
       final ImagePicker picker = ImagePicker();
@@ -172,16 +228,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _pickedImagePath = image.path;
         });
         
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('تم تحديث صورة الملف الشخصي بنجاح'),
-              backgroundColor: AppColors.success,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          );
-        }
+        await _uploadAvatar(image.path);
       }
     } catch (e) {
       if (mounted) {
@@ -506,9 +553,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   backgroundColor: Colors.grey[200],
                                   backgroundImage: _pickedImagePath != null
                                       ? FileImage(File(_pickedImagePath!)) as ImageProvider
-                                      : (parent.avatarUrl != null && parent.avatarUrl!.length > 5
-                                          ? NetworkImage(parent.avatarUrl!) as ImageProvider
-                                          : const AssetImage('assets/icons/app_icon.jpeg') as ImageProvider),
+                                      : (() {
+                                          final normalized = AppConstants.normalizeUrl(parent.avatarUrl);
+                                          return (normalized != null && normalized.length > 5
+                                              ? NetworkImage(normalized) as ImageProvider
+                                              : const AssetImage('assets/icons/app_icon.jpeg') as ImageProvider);
+                                        })(),
                                 ),
                               ),
                               Positioned(

@@ -7,6 +7,7 @@ import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/providers/children_provider.dart';
 import '../../../../core/models/student.dart';
 import '../../../../core/providers/parent_provider.dart';
+import '../../../../core/utils/constants.dart';
 import '../../../../core/widgets/student_avatar.dart';
 import '../../../../core/extensions/localization_extension.dart';
 import '../../../../core/providers/notifications_provider.dart';
@@ -159,20 +160,46 @@ class _WelcomeHeader extends ConsumerWidget {
             child: CircleAvatar(
               radius: 30,
               backgroundColor: Colors.white.withValues(alpha: 0.2),
-              child: parent.avatarUrl != null && parent.avatarUrl!.isNotEmpty
-                  ? Text(
-                      parent.avatarUrl!,
+              child: () {
+                final normalizedUrl = AppConstants.normalizeUrl(parent.avatarUrl);
+                if (normalizedUrl != null && normalizedUrl.isNotEmpty) {
+                  if (normalizedUrl.length <= 4) {
+                    return Text(
+                      normalizedUrl,
                       style: const TextStyle(fontSize: 28),
-                    )
-                  : Text(
-                      parent.name.isNotEmpty ? parent.name.substring(0, 1) : '?',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: 'GoogleSans',
+                    );
+                  } else {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.network(
+                        normalizedUrl,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Text(
+                          parent.name.isNotEmpty ? parent.name.substring(0, 1) : '?',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            fontFamily: 'GoogleSans',
+                          ),
+                        ),
                       ),
+                    );
+                  }
+                } else {
+                  return Text(
+                    parent.name.isNotEmpty ? parent.name.substring(0, 1) : '?',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'GoogleSans',
                     ),
+                  );
+                }
+              }(),
             ),
           ),
           const SizedBox(width: 16),
