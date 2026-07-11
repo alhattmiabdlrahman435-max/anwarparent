@@ -222,8 +222,7 @@ class _ParentAppState extends ConsumerState<ParentApp> {
 
       // Show local notification banner (foreground only)
       final notification = message.notification;
-      final android = message.notification?.android;
-      if (notification != null && android != null && !kIsWeb) {
+      if (notification != null && !kIsWeb) {
         _flutterLocalNotificationsPlugin.show(
           id: notification.hashCode,
           title: notification.title,
@@ -238,6 +237,11 @@ class _ParentAppState extends ConsumerState<ParentApp> {
               priority: Priority.high,
               playSound: true,
               enableVibration: true,
+            ),
+            iOS: const DarwinNotificationDetails(
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
             ),
           ),
           payload: type.isEmpty ? 'attendance' : type,

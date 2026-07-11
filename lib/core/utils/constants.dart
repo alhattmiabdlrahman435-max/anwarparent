@@ -1,5 +1,17 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+
 class AppConstants {
-  static const String baseUrl = 'http://192.168.1.2:8000/api/';
+  static String get baseUrl {
+    if (kDebugMode) {
+      try {
+        if (Platform.isAndroid) {
+          return 'http://10.0.2.2:8000/api/';
+        }
+      } catch (_) {}
+    }
+    return 'http://127.0.0.1:8000/api/';
+  }
 
   // Storage Keys
   static const String tokenKey = 'auth_token';
