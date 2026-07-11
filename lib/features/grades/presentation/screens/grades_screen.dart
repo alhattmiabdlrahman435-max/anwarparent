@@ -47,7 +47,9 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       drawer: const AppDrawer(),
-      body: CustomScrollView(
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(gradesProvider.notifier).refresh(),
+        child: CustomScrollView(
         physics: const BouncingScrollPhysics(
           parent: AlwaysScrollableScrollPhysics(),
         ),
@@ -126,6 +128,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
 
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
+       ),
       ),
     );
   }
@@ -225,7 +228,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  context.translateMock(subject.subjectName),
+                  subject.subjectName,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -406,7 +409,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                context.translateMock(month.monthName),
+                month.monthName,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,

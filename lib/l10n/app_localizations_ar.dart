@@ -477,4 +477,21 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get duplicateAbsenceRequest =>
       'لقد قمت بتقديم طلب غياب لهذا الطالب في هذا التاريخ مسبقاً';
+
+  @override
+  String errorLoadingNotifications(String error) {
+    return 'حدث خطأ أثناء تحميل الإشعارات: $error';
+  }
+
+  @override
+  String get noPublicNotifications => 'لا توجد إشعارات عامة حالياً';
+
+  @override
+  String get noFeesRegistered => 'لا توجد رسوم مالية مسجلة لهذا الطالب';
+
+  @override
+  String get noPaymentsRegistered => 'لم يتم تسجيل أي عمليات دفع بعد';
+
+  @override
+  String get pleaseEnterAbsenceReason => 'يرجى كتابة سبب الغياب';
 }

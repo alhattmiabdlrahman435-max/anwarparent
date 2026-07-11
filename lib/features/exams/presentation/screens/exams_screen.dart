@@ -178,7 +178,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
                       child: ChoiceChip(
                         showCheckmark: false,
                         label: Text(
-                          context.translateMock(period.displayName),
+                          period.displayName,
                           style: TextStyle(
                             fontWeight: isSelected
                                 ? FontWeight.bold
@@ -243,7 +243,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          context.loc.noScheduleAddedFor(context.translateMock(_selectedPeriod.displayName)),
+                          context.loc.noScheduleAddedFor(_selectedPeriod.displayName),
                           style: TextStyle(
                             fontSize: 16,
                             color: isDark
@@ -324,7 +324,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
                               cells: [
                                 DataCell(
                                   Text(
-                                    context.translateMock(subject.subjectName),
+                                    subject.subjectName,
                                     style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                 ),
@@ -333,7 +333,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
                                 ),
                                 DataCell(
                                   Text(
-                                    context.translateMock(subject.time),
+                                    subject.time,
                                     style: TextStyle(
                                       color: isDark ? Colors.teal.shade300 : const Color(0xFF0D9488),
                                       fontWeight: FontWeight.w600,
@@ -344,7 +344,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
                                   Container(
                                     constraints: const BoxConstraints(maxWidth: 250),
                                     child: Text(
-                                      context.translateMock(subject.note),
+                                      subject.note,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -386,13 +386,6 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
     );
   }
 
-  String _getSubjectName(BuildContext context, String subjectName) {
-    return context.translateMock(subjectName);
-  }
-
-  String _getNoteTranslation(BuildContext context, String note) {
-    return context.translateMock(note);
-  }
 
   Widget _buildExamSubjectCard(
     ExamSubject subject,
@@ -516,7 +509,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  _getSubjectName(context, subject.subjectName),
+                  subject.subjectName,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -533,7 +526,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      context.translateMock(subject.time),
+                      subject.time,
                       style: TextStyle(
                         fontSize: 13,
                         color: isDark ? Colors.teal.shade300 : const Color(0xFF0D9488),
@@ -556,7 +549,7 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        _getNoteTranslation(context, subject.note),
+                        subject.note,
                         style: TextStyle(
                           fontSize: 13,
                           color: isDark

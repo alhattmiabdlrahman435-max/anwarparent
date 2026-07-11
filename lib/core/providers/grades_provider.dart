@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/grade.dart';
+import '../models/student.dart';
 import '../network/api_client.dart';
 import 'children_provider.dart';
 
@@ -8,65 +9,68 @@ part 'grades_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class Grades extends _$Grades {
-  List<SubjectGrade> _cachedGrades = [];
 
   @override
   List<SubjectGrade> build() {
     final kids = ref.watch(childrenProvider);
     if (kids.isEmpty) {
-      _cachedGrades = [];
       return [];
     }
 
     // Schedule the load in a microtask to avoid mutating state during the build phase
     Future.microtask(() => _loadGradesForKids(kids));
 
-    return _cachedGrades;
+    return state;
   }
 
-  Future<void> _loadGradesForKids(List<dynamic> kids) async {
+  Future<void> _loadGradesForKids(List<Student> kids) async {
     try {
       final dio = ref.read(apiClientProvider);
-      final List<SubjectGrade> allGrades = [];
 
-      for (final kid in kids) {
-        final response = await dio.get('grades/detailed/${kid.id}');
-        if (response.data != null && response.data['success'] == true) {
-          final List<dynamic> list = response.data['grades'] ?? [];
-          
-          // Group by subject_id
-          final Map<int, List<dynamic>> grouped = {};
-          for (final record in list) {
-            final subjectId = record['subject_id'] as int;
-            grouped.putIfAbsent(subjectId, () => []).add(record);
+      // Load grades for all children in parallel for faster loading
+      final results = await Future.wait(
+        kids.map((kid) async {
+          final response = await dio.get('grades/detailed/${kid.id}');
+          if (response.data != null && response.data['success'] == true) {
+            final List<dynamic> list = response.data['grades'] ?? [];
+            
+            // Group by subject_id
+            final Map<int, List<dynamic>> grouped = {};
+            for (final record in list) {
+              final subjectId = record['subject_id'] as int;
+              grouped.putIfAbsent(subjectId, () => []).add(record);
+            }
+
+            // Build SubjectGrade for each subject
+            final List<SubjectGrade> kidGrades = [];
+            grouped.forEach((subjectId, records) {
+              final firstRecord = records.first;
+              final subjectName = firstRecord['subject']?['name_ar'] ?? '';
+              final iconName = _getIconForSubject(subjectName);
+
+              final term1Grade = _buildTermGrade(records, 'term1');
+              final term2Grade = _buildTermGrade(records, 'term2');
+
+              kidGrades.add(
+                SubjectGrade(
+                  id: '${kid.id}_$subjectId',
+                  studentId: kid.id,
+                  subjectName: subjectName,
+                  iconName: iconName,
+                  term1: term1Grade,
+                  term2: term2Grade,
+                ),
+              );
+            });
+            return kidGrades;
           }
+          return <SubjectGrade>[];
+        }),
+      );
 
-          // Build SubjectGrade for each subject
-          grouped.forEach((subjectId, records) {
-            final firstRecord = records.first;
-            final subjectName = firstRecord['subject']?['name_ar'] ?? '';
-            final iconName = _getIconForSubject(subjectName);
-
-            // Extract monthly and final grades for Term 1 and Term 2
-            final term1Grade = _buildTermGrade(records, 'term1');
-            final term2Grade = _buildTermGrade(records, 'term2');
-
-            allGrades.add(
-              SubjectGrade(
-                id: '${kid.id}_$subjectId',
-                studentId: kid.id,
-                subjectName: subjectName,
-                iconName: iconName,
-                term1: term1Grade,
-                term2: term2Grade,
-              ),
-            );
-          });
-        }
-      }
+      final allGrades = results.expand((grades) => grades).toList();
 
       if (ref.mounted) {
-        _cachedGrades = allGrades;
         state = allGrades;
       }
     } catch (e) {

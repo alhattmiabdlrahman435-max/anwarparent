@@ -48,7 +48,7 @@ class StudentAvatar extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(
               color: isSelected
-                  ? const Color(0xFF062A5A)
+                  ? (isDark ? Colors.white : const Color(0xFF062A5A))
                   : (isDark ? Colors.white24 : Colors.grey.shade300),
               width: isSelected ? 2 : 1,
             ),
@@ -82,10 +82,10 @@ class StudentAvatar extends StatelessWidget {
     final initials = name.isNotEmpty ? name.substring(0, 1) : '?';
     final fallbackBgColor = backgroundColor ??
         (isSelected
-            ? const Color(0xFF062A5A)
+            ? (isDark ? Colors.white : const Color(0xFF062A5A))
             : (isDark ? Colors.white12 : const Color(0xFF062A5A).withValues(alpha: 0.1)));
     final fallbackTextColor = isSelected
-        ? Colors.white
+        ? (isDark ? const Color(0xFF062A5A) : Colors.white)
         : (isDark ? Colors.white : const Color(0xFF062A5A));
 
     return Container(

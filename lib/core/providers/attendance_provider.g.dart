@@ -41,7 +41,7 @@ final class AttendanceDataProvider
   }
 }
 
-String _$attendanceDataHash() => r'8b41b7a4bef18e476a241b13e1d454369f2775db';
+String _$attendanceDataHash() => r'4206f4c91e553e74435a5e788f0973286978f6d3';
 
 abstract class _$AttendanceData extends $Notifier<List<AttendanceRecord>> {
   List<AttendanceRecord> build();

@@ -32,13 +32,14 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
   }
 
   Future<void> _handleSubmit() async {
+    if (_isSubmitting) return;
     if (selectedStudentId == null) {
       _showErrorSnackBar(context.loc.pleaseSelectStudent);
       return;
     }
 
     if (_reasonController.text.trim().isEmpty) {
-      _showErrorSnackBar('يرجى كتابة سبب الغياب');
+      _showErrorSnackBar(context.loc.pleaseEnterAbsenceReason);
       return;
     }
 

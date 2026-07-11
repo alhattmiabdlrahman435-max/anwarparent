@@ -186,5 +186,17 @@
       }
     }
   },
-  "duplicateAbsenceRequest": "An absence request for this student on this date already exists"
+  "duplicateAbsenceRequest": "An absence request for this student on this date already exists",
+  "errorLoadingNotifications": "An error occurred while loading notifications: {error}",
+  "@errorLoadingNotifications": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noPublicNotifications": "No public notifications currently",
+  "noFeesRegistered": "No tuition fees registered for this student",
+  "noPaymentsRegistered": "No payments have been registered yet",
+  "pleaseEnterAbsenceReason": "Please enter a reason for absence"
 }

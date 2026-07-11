@@ -5,6 +5,13 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/providers/parent_provider.dart';
+import '../../../../core/providers/children_provider.dart';
+import '../../../../core/providers/attendance_provider.dart';
+import '../../../../core/providers/assignments_provider.dart';
+import '../../../../core/providers/grades_provider.dart';
+import '../../../../core/providers/schedule_provider.dart';
+import '../../../../core/providers/finance_provider.dart';
+import '../../../../core/providers/notifications_provider.dart';
 
 part 'auth_provider.g.dart';
 
@@ -40,7 +47,9 @@ class Auth extends _$Auth {
         await dio.post('user/fcm-token', data: {
           'fcm_token': fcmToken,
         });
-        debugPrint('FCM Token synced to backend successfully: $fcmToken');
+        if (kDebugMode) {
+          debugPrint('FCM Token synced to backend successfully.');
+        }
       }
     } catch (e) {
       debugPrint('Error syncing FCM Token to backend: $e');
@@ -109,6 +118,17 @@ class Auth extends _$Auth {
       // Always delete local token and set auth state to false (logged out)
       await _storage.delete(key: _tokenKey);
       await ref.read(currentParentProvider.notifier).clearProfile();
+
+      // Invalidate all keepAlive providers to clear cached user data
+      // This prevents data from the previous user session from leaking
+      ref.invalidate(childrenProvider);
+      ref.invalidate(attendanceDataProvider);
+      ref.invalidate(assignmentsProvider);
+      ref.invalidate(gradesProvider);
+      ref.invalidate(classSchedulesProvider);
+      ref.invalidate(financeProvider);
+      ref.invalidate(notificationsProvider);
+
       state = const AsyncValue.data(false);
     }
   }

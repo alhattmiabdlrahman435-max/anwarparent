@@ -33,7 +33,7 @@ final class AbsenceRequestsProvider
   AbsenceRequests create() => AbsenceRequests();
 }
 
-String _$absenceRequestsHash() => r'9f476451d0ac37a0041b298e954e6d33027013dc';
+String _$absenceRequestsHash() => r'b5f743cf9b72aa494b09ba1491322dc77fb945f7';
 
 abstract class _$AbsenceRequests extends $AsyncNotifier<List<AbsenceRequest>> {
   FutureOr<List<AbsenceRequest>> build();

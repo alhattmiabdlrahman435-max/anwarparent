@@ -63,6 +63,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '462180354655',
     projectId: 'anwaralola',
     storageBucket: 'anwaralola.firebasestorage.app',
-    iosBundleId: 'com.example.anwarparent',
+    iosBundleId: 'com.alhattami.anwarparent',
   );
 }

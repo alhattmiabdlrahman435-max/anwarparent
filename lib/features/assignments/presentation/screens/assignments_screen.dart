@@ -126,7 +126,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              context.translateMock(currentAssignment.subjectName),
+                              currentAssignment.subjectName,
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -271,7 +271,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    context.translateMock(currentAssignment.content),
+                    currentAssignment.content,
                     style: TextStyle(
                       fontSize: 15,
                       height: 1.5,
@@ -496,10 +496,16 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                                   : const Color(0xFF062A5A),
                             ),
                             onPressed: () {
+                              final isAr = Localizations.localeOf(context).languageCode == 'ar';
                               setState(() {
-                                // انتقل من بداية الأسبوع الحالي واطرح 7 أيام
                                 final currentStart = _getStartOfWeek(_focusedDate);
-                                _focusedDate = currentStart.subtract(const Duration(days: 7));
+                                if (isAr) {
+                                  // في اللغة العربية، السير باتجاه اليسار يعني الانتقال للمستقبل (الأسبوع القادم)
+                                  _focusedDate = currentStart.add(const Duration(days: 7));
+                                } else {
+                                  // في اللغة الإنجليزية، السير باتجاه اليسار يعني الانتقال للماضي (الأسبوع السابق)
+                                  _focusedDate = currentStart.subtract(const Duration(days: 7));
+                                }
                               });
                             },
                           ),
@@ -523,10 +529,16 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                                   : const Color(0xFF062A5A),
                             ),
                             onPressed: () {
+                              final isAr = Localizations.localeOf(context).languageCode == 'ar';
                               setState(() {
-                                // انتقل من بداية الأسبوع الحالي وأضف 7 أيام
                                 final currentStart = _getStartOfWeek(_focusedDate);
-                                _focusedDate = currentStart.add(const Duration(days: 7));
+                                if (isAr) {
+                                  // في اللغة العربية، السير باتجاه اليمين يعني الانتقال للماضي (الأسبوع السابق)
+                                  _focusedDate = currentStart.subtract(const Duration(days: 7));
+                                } else {
+                                  // في اللغة الإنجليزية، السير باتجاه اليمين يعني الانتقال للمستقبل (الأسبوع القادم)
+                                  _focusedDate = currentStart.add(const Duration(days: 7));
+                                }
                               });
                             },
                           ),
@@ -798,7 +810,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              context.translateMock(assignment.subjectName),
+                              assignment.subjectName,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -838,7 +850,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        context.translateMock(assignment.content),
+                        assignment.content,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

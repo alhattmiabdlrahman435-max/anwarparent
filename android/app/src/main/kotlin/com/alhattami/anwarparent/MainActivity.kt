@@ -1,4 +1,4 @@
-package com.example.anwarparent
+package com.alhattami.anwarparent
 
 import io.flutter.embedding.android.FlutterActivity
 

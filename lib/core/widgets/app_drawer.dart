@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/localization_extension.dart';
 import '../../../../core/providers/parent_provider.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../utils/constants.dart';
 
 class AppDrawer extends ConsumerWidget {
@@ -88,12 +90,13 @@ class AppDrawer extends ConsumerWidget {
                                 } else {
                                   return ClipRRect(
                                     borderRadius: BorderRadius.circular(42),
-                                    child: Image.network(
-                                      normalizedUrl,
+                                    child: CachedNetworkImage(
+                                      imageUrl: normalizedUrl,
                                       width: 84,
                                       height: 84,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => Icon(
+                                      placeholder: (context, url) => const CupertinoActivityIndicator(),
+                                      errorWidget: (context, url, error) => Icon(
                                         CupertinoIcons.person_solid,
                                         size: 45,
                                         color: isDark ? Colors.white : primaryColor,
@@ -135,7 +138,7 @@ class AppDrawer extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    parent.name.isNotEmpty ? context.translateMock(parent.name) : 'Parent Name',
+                    parent.name.isNotEmpty ? parent.name : 'Parent Name',
                     style: TextStyle(
                       color: textColor, // Adaptive Color
                       fontSize: 20,
@@ -306,10 +309,10 @@ class AppDrawer extends ConsumerWidget {
                           child: Text(context.loc.cancel),
                         ),
                         TextButton(
-                          onPressed: () {
+                          onPressed: () async {
                             Navigator.pop(context); // Close dialog
                             Navigator.pop(context); // Close drawer
-                            context.go('/');
+                            await ref.read(authProvider.notifier).logout();
                           },
                           child: Text(
                             context.loc.logout,

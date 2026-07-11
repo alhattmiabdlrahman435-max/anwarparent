@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/extensions/localization_extension.dart';
 import '../../../../core/providers/notifications_provider.dart';
 import '../../../../core/models/app_notification.dart';
+import '../../../../core/providers/children_provider.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
@@ -14,6 +16,7 @@ class NotificationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(notificationsProvider);
+    final currentChild = ref.watch(currentChildProvider);
     
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
@@ -39,16 +42,25 @@ class NotificationsScreen extends ConsumerWidget {
               error: (err, stack) => SliverFillRemaining(
                 child: Center(
                   child: Text(
-                    'حدث خطأ أثناء تحميل الإشعارات: $err',
+                    context.loc.errorLoadingNotifications(err.toString()),
                     style: TextStyle(color: textColor, fontFamily: 'GoogleSans'),
                   ),
                 ),
               ),
               data: (allNotifications) {
                 // Filter out alerts and reports so they only show in Alerts tab/screen
-                final notifications = allNotifications
+                var notifications = allNotifications
                     .where((n) => n.type != 'alert' && n.type != 'report')
                     .toList();
+
+                if (currentChild != null) {
+                  notifications = notifications.where((n) {
+                    if (n.targetType == 'all_parents') return true;
+                    if (n.targetType == 'by_student' && n.targetId == currentChild.id) return true;
+                    if (n.targetType == 'by_class' && n.targetId == currentChild.classId) return true;
+                    return false;
+                  }).toList();
+                }
 
                 if (notifications.isEmpty) {
                   return SliverFillRemaining(
@@ -63,7 +75,7 @@ class NotificationsScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'لا توجد إشعارات عامة حالياً',
+                            context.loc.noPublicNotifications,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -92,6 +104,7 @@ class NotificationsScreen extends ConsumerWidget {
                               }
                             },
                             child: _buildNotificationCard(
+                              context: context,
                               notification: notif,
                               cardColor: cardColor,
                               textColor: textColor,
@@ -114,6 +127,7 @@ class NotificationsScreen extends ConsumerWidget {
   }
 
   Widget _buildNotificationCard({
+    required BuildContext context,
     required AppNotification notification,
     required Color cardColor,
     required Color textColor,
@@ -139,7 +153,7 @@ class NotificationsScreen extends ConsumerWidget {
         break;
     }
 
-    final String formattedTime = notification.createdAt.toLocal().toString().substring(0, 16);
+    final String formattedTime = DateFormat('yyyy-MM-dd HH:mm', Localizations.localeOf(context).languageCode).format(notification.createdAt.toLocal());
 
     return Container(
       padding: const EdgeInsets.all(16),

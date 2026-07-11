@@ -92,10 +92,7 @@ class AppSliverHeader extends ConsumerWidget {
                   children: [
                     Text(
                       currentChild != null
-                          ? context
-                                .translateMock(currentChild.name)
-                                .split(' ')
-                                .first
+                          ? currentChild.name.split(' ').first
                           : context.loc.selectChild,
                       style: TextStyle(
                         color: isDark ? Colors.white : const Color(0xFF062A5A),
@@ -179,7 +176,7 @@ class AppSliverHeader extends ConsumerWidget {
                       isSelected: isSelected,
                     ),
                     title: Text(
-                      context.translateMock(child.name),
+                      child.name,
                       style: TextStyle(
                         fontWeight: isSelected
                             ? FontWeight.bold
@@ -189,16 +186,16 @@ class AppSliverHeader extends ConsumerWidget {
                       ),
                     ),
                     subtitle: Text(
-                      context.translateMock(child.grade),
+                      child.grade,
                       style: TextStyle(
                         color: Colors.grey.shade600,
                         fontFamily: 'GoogleSans',
                       ),
                     ),
                     trailing: isSelected
-                        ? const Icon(
+                        ? Icon(
                             CupertinoIcons.check_mark_circled_solid,
-                            color: Color(0xFF062A5A),
+                            color: isDark ? Colors.white : const Color(0xFF062A5A),
                           )
                         : null,
                     onTap: () {

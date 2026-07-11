@@ -9,6 +9,9 @@ part 'notifications_provider.g.dart';
 class Notifications extends _$Notifications {
   @override
   FutureOr<List<AppNotification>> build() async {
+    // FCM foreground listening is centralized in main.dart (_ParentAppState).
+    // It calls ref.invalidate(notificationsProvider) when a notification arrives,
+    // which triggers a rebuild of this provider automatically.
     return _loadNotifications();
   }
 
@@ -36,17 +39,7 @@ class Notifications extends _$Notifications {
         state = AsyncValue.data([
           for (final notif in currentList)
             if (notif.id == id)
-              AppNotification(
-                id: notif.id,
-                title: notif.title,
-                content: notif.content,
-                type: notif.type,
-                isRead: true,
-                targetType: notif.targetType,
-                targetId: notif.targetId,
-                attachmentUrl: notif.attachmentUrl,
-                createdAt: notif.createdAt,
-              )
+              notif.copyWith(isRead: true)
             else
               notif
         ]);

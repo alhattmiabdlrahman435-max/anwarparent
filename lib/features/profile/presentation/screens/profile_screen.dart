@@ -32,6 +32,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late TextEditingController _addressController;
+  late TextEditingController _nationalIdController;
 
   bool _initialized = false;
 
@@ -49,6 +50,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _nameController = TextEditingController();
     _phoneController = TextEditingController();
     _addressController = TextEditingController();
+    _nationalIdController = TextEditingController();
   }
 
   @override
@@ -56,6 +58,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
+    _nationalIdController.dispose();
     super.dispose();
   }
 
@@ -403,6 +406,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             final response = await dio.post('user/update-password', data: {
                               'current_password': currentPasswordController.text,
                               'new_password': newPasswordController.text,
+                              'new_password_confirmation': confirmPasswordController.text,
                             });
 
                             if (response.data != null && response.data['success'] == true) {
@@ -463,7 +467,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  final String _address = 'اليمن - صنعاء';
+  // Address is loaded from backend or defaults to empty
 
   @override
   Widget build(BuildContext context) {
@@ -634,7 +638,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             icon: PhosphorIcons.identificationCard(PhosphorIconsStyle.duotone),
                             label: 'الرقم الوطني (اسم المستخدم)',
                             value: parent.nationalId,
-                            controller: _addressController,
+                            controller: _nationalIdController,
                             isEditableField: false,
                             isDark: isDark,
                             textColor: textColor,
@@ -671,7 +675,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           _buildEditableRow(
                             icon: PhosphorIcons.mapPin(PhosphorIconsStyle.duotone),
                             label: 'العنوان السكني',
-                            value: _address,
+                            value: _addressController.text.isEmpty ? 'غير محدد' : _addressController.text,
                             controller: _addressController,
                             isEditableField: _isEditing,
                             isDark: isDark,

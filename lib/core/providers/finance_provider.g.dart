@@ -41,7 +41,7 @@ final class FinanceProvider
   }
 }
 
-String _$financeHash() => r'19df94ddc3bf4807610e40687271ad7937df7910';
+String _$financeHash() => r'fda5f17616272f6210a8d91563d8258cf91bbd95';
 
 abstract class _$Finance extends $Notifier<List<StudentFinanceSummary>> {
   List<StudentFinanceSummary> build();

@@ -129,11 +129,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     ClassSchedule? schedule;
 
     if (currentChild != null) {
-      try {
-        schedule = allSchedules.firstWhere((s) => s.studentId == currentChild.id);
-      } catch (_) {
-        schedule = null;
-      }
+      schedule = allSchedules.where((s) => s.studentId == currentChild.id).firstOrNull;
     }
 
     final now = DateTime.now();
@@ -404,7 +400,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Text(
-                                              context.translateMock(period.subjectName),
+                                              period.subjectName,
                                               style: TextStyle(
                                                 fontFamily: 'GoogleSans',
                                                 fontSize: 16,
@@ -422,7 +418,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                                 ),
                                                 const SizedBox(width: 4),
                                                 Text(
-                                                  context.translateMock(period.teacherName),
+                                                  period.teacherName,
                                                   style: TextStyle(
                                                     fontFamily: 'GoogleSans',
                                                     fontSize: 12,
@@ -582,7 +578,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.center,
                                         children: [
                                           Text(
-                                            context.translateMock(period.subjectName),
+                                            period.subjectName,
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                             ),

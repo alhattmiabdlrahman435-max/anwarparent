@@ -16,7 +16,7 @@ class Children extends _$Children {
   }
 
   Future<void> _loadFromBackend() async {
-    final parent = ref.watch(currentParentProvider);
+    final parent = ref.read(currentParentProvider);
     if (parent.id.isEmpty) {
       if (ref.mounted) {
         state = [];
@@ -59,13 +59,25 @@ class Children extends _$Children {
 
 @Riverpod(keepAlive: true)
 class CurrentChild extends _$CurrentChild {
+  String? _selectedChildId;
+
   @override
   Student? build() {
     final kids = ref.watch(childrenProvider);
-    return kids.isNotEmpty ? kids.first : null;
+    if (kids.isEmpty) return null;
+
+    // If user previously selected a child, try to find it in the updated list
+    if (_selectedChildId != null) {
+      final found = kids.where((k) => k.id == _selectedChildId).firstOrNull;
+      if (found != null) return found;
+    }
+
+    // Default to first child only if no prior selection
+    return kids.first;
   }
 
   void setChild(Student child) {
+    _selectedChildId = child.id;
     state = child;
   }
 }

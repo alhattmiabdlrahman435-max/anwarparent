@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/class_schedule.dart';
+import '../models/student.dart';
 import '../network/api_client.dart';
 import 'children_provider.dart';
 
@@ -17,7 +18,7 @@ class ClassSchedules extends _$ClassSchedules {
     return [];
   }
 
-  Future<void> _loadSchedules(List<dynamic> kids) async {
+  Future<void> _loadSchedules(List<Student> kids) async {
     try {
       final dio = ref.read(apiClientProvider);
       final response = await dio.get('schedules');
@@ -38,7 +39,7 @@ class ClassSchedules extends _$ClassSchedules {
         ];
 
         for (final kid in kids) {
-          final String classGrade = kid.grade ?? ''; // مثل "الصف الأول - أ"
+          final String classGrade = kid.grade; // مثل "الصف الأول - أ"
           
           if (apiSchedules.containsKey(classGrade)) {
             final classData = apiSchedules[classGrade] as Map<String, dynamic>;

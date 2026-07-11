@@ -61,8 +61,7 @@ class _ContactUsScreenState extends ConsumerState<ContactUsScreen> {
     
     try {
       final dio = ref.read(apiClientProvider);
-      // TODO: Verify the endpoint URL for contact-us
-      await dio.post('contact-us', data: {
+      await dio.post('contact-messages', data: {
         'name': _nameController.text,
         'phone': _phoneController.text,
         'message': _messageController.text,

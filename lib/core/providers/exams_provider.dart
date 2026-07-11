@@ -5,7 +5,7 @@ import '../network/api_client.dart';
 
 part 'exams_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class Exams extends _$Exams {
   @override
   List<ExamSchedule> build() {
@@ -76,7 +76,9 @@ class Exams extends _$Exams {
   }
 
   List<ExamSchedule> getExamsForStudent(String studentId) {
-    // Return all schedules to be flexible and avoid empty screens
-    return state;
+    // Filter by studentId first; if no student-specific schedules exist,
+    // fall back to all schedules (for shared class-level exam schedules)
+    final filtered = state.where((e) => e.studentId == studentId).toList();
+    return filtered.isNotEmpty ? filtered : state;
   }
 }

@@ -155,7 +155,7 @@ class ChildrenScreen extends ConsumerWidget {
                       textDirection: TextDirection.rtl,
                       children: [
                         Text(
-                          context.translateMock(student.name),
+                          student.name,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -175,7 +175,7 @@ class ChildrenScreen extends ConsumerWidget {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              context.translateMock(student.grade),
+                              student.grade,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: subTextColor,

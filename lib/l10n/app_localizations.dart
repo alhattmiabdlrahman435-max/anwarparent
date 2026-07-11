@@ -1009,6 +1009,36 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لقد قمت بتقديم طلب غياب لهذا الطالب في هذا التاريخ مسبقاً'**
   String get duplicateAbsenceRequest;
+
+  /// No description provided for @errorLoadingNotifications.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدث خطأ أثناء تحميل الإشعارات: {error}'**
+  String errorLoadingNotifications(String error);
+
+  /// No description provided for @noPublicNotifications.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد إشعارات عامة حالياً'**
+  String get noPublicNotifications;
+
+  /// No description provided for @noFeesRegistered.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد رسوم مالية مسجلة لهذا الطالب'**
+  String get noFeesRegistered;
+
+  /// No description provided for @noPaymentsRegistered.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يتم تسجيل أي عمليات دفع بعد'**
+  String get noPaymentsRegistered;
+
+  /// No description provided for @pleaseEnterAbsenceReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'يرجى كتابة سبب الغياب'**
+  String get pleaseEnterAbsenceReason;
 }
 
 class _AppLocalizationsDelegate

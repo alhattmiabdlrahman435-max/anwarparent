@@ -186,5 +186,17 @@
       }
     }
   },
-  "duplicateAbsenceRequest": "لقد قمت بتقديم طلب غياب لهذا الطالب في هذا التاريخ مسبقاً"
+  "duplicateAbsenceRequest": "لقد قمت بتقديم طلب غياب لهذا الطالب في هذا التاريخ مسبقاً",
+  "errorLoadingNotifications": "حدث خطأ أثناء تحميل الإشعارات: {error}",
+  "@errorLoadingNotifications": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noPublicNotifications": "لا توجد إشعارات عامة حالياً",
+  "noFeesRegistered": "لا توجد رسوم مالية مسجلة لهذا الطالب",
+  "noPaymentsRegistered": "لم يتم تسجيل أي عمليات دفع بعد",
+  "pleaseEnterAbsenceReason": "يرجى كتابة سبب الغياب"
 }

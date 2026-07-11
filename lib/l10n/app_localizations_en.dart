@@ -482,4 +482,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get duplicateAbsenceRequest =>
       'An absence request for this student on this date already exists';
+
+  @override
+  String errorLoadingNotifications(String error) {
+    return 'An error occurred while loading notifications: $error';
+  }
+
+  @override
+  String get noPublicNotifications => 'No public notifications currently';
+
+  @override
+  String get noFeesRegistered => 'No tuition fees registered for this student';
+
+  @override
+  String get noPaymentsRegistered => 'No payments have been registered yet';
+
+  @override
+  String get pleaseEnterAbsenceReason => 'Please enter a reason for absence';
 }

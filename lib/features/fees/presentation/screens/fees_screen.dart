@@ -26,11 +26,7 @@ class FeesScreen extends ConsumerWidget {
 
     StudentFinanceSummary? financeSummary;
     if (currentChild != null && financeRecords.isNotEmpty) {
-      try {
-        financeSummary = financeRecords.firstWhere((f) => f.studentId == currentChild.id);
-      } catch (_) {
-        financeSummary = null;
-      }
+      financeSummary = financeRecords.where((f) => f.studentId == currentChild.id).firstOrNull;
     }
 
     return Scaffold(
@@ -68,7 +64,7 @@ class FeesScreen extends ConsumerWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40.0),
                         child: Text(
-                          'لا توجد رسوم مالية مسجلة لهذا الطالب',
+                          context.loc.noFeesRegistered,
                           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -159,7 +155,7 @@ class FeesScreen extends ConsumerWidget {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 20.0),
                           child: Text(
-                            'لم يتم تسجيل أي عمليات دفع بعد',
+                            context.loc.noPaymentsRegistered,
                             style: TextStyle(color: subTextColor),
                           ),
                         ),

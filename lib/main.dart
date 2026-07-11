@@ -35,6 +35,30 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint('Handling a background message: ${message.messageId}');
 }
 
+/// Centralized notification routing - eliminates DRY violation.
+/// Maps notification type to the correct app route.
+void _navigateByNotificationType(String type) {
+  const typeToRoute = {
+    'exam_schedule': '/exams',
+    'exams': '/exams',
+    'weekly_schedule': '/schedule',
+    'schedule': '/schedule',
+    'assignment': '/assignments',
+    'assignments': '/assignments',
+    'grade': '/grades',
+    'grades': '/grades',
+    'absence_request': '/absence_history',
+    'report': '/alerts',
+    'alert': '/alerts',
+    'notifications': '/alerts',
+  };
+  final route = typeToRoute[type] ?? '/attendance';
+  final context = rootNavigatorKey.currentContext;
+  if (context != null) {
+    GoRouter.of(context).go(route);
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -77,22 +101,8 @@ Future<void> _setupFirebaseMessaging() async {
     await _flutterLocalNotificationsPlugin.initialize(
       settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        final payload = response.payload;
-        if (payload == 'exam_schedule' || payload == 'exams') {
-          rootNavigatorKey.currentContext?.push('/exams');
-        } else if (payload == 'weekly_schedule' || payload == 'schedule') {
-          rootNavigatorKey.currentContext?.push('/schedule');
-        } else if (payload == 'assignment' || payload == 'assignments') {
-          rootNavigatorKey.currentContext?.push('/assignments');
-        } else if (payload == 'grade' || payload == 'grades') {
-          rootNavigatorKey.currentContext?.push('/grades');
-        } else if (payload == 'absence_request') {
-          rootNavigatorKey.currentContext?.push('/absence_history');
-        } else if (payload == 'report' || payload == 'alert' || payload == 'notifications') {
-          rootNavigatorKey.currentContext?.push('/alerts');
-        } else {
-          rootNavigatorKey.currentContext?.push('/attendance');
-        }
+        final payload = response.payload ?? 'attendance';
+        _navigateByNotificationType(payload);
       },
     );
 
@@ -100,55 +110,12 @@ Future<void> _setupFirebaseMessaging() async {
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_channel);
 
-    // Listen to foreground messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint('FCM Foreground Message: ${message.notification?.title} - ${message.notification?.body}');
-      
-      final notification = message.notification;
-      final android = message.notification?.android;
-      final type = message.data['type'] ?? 'attendance';
+    // NOTE: FirebaseMessaging.onMessage is NOT listened here to avoid
+    // duplicate listeners. It is handled exclusively in _ParentAppState
+    // which has access to Riverpod ref for data refresh.
 
-      if (notification != null && android != null && !kIsWeb) {
-        _flutterLocalNotificationsPlugin.show(
-          id: notification.hashCode,
-          title: notification.title,
-          body: notification.body,
-          notificationDetails: NotificationDetails(
-            android: AndroidNotificationDetails(
-              _channel.id,
-              _channel.name,
-              channelDescription: _channel.description,
-              icon: '@mipmap/ic_launcher',
-              importance: Importance.max,
-              priority: Priority.high,
-              playSound: true,
-              enableVibration: true,
-            ),
-          ),
-          payload: type,
-        );
-      }
-    });
-
-    // Handle background notification clicks
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      final type = message.data['type'] ?? 'attendance';
-      if (type == 'exam_schedule' || type == 'exams') {
-        rootNavigatorKey.currentContext?.push('/exams');
-      } else if (type == 'weekly_schedule' || type == 'schedule') {
-        rootNavigatorKey.currentContext?.push('/schedule');
-      } else if (type == 'assignment' || type == 'assignments') {
-        rootNavigatorKey.currentContext?.push('/assignments');
-      } else if (type == 'grade' || type == 'grades') {
-        rootNavigatorKey.currentContext?.push('/grades');
-      } else if (type == 'absence_request') {
-        rootNavigatorKey.currentContext?.push('/absence_history');
-      } else if (type == 'report' || type == 'alert' || type == 'notifications') {
-        rootNavigatorKey.currentContext?.push('/alerts');
-      } else {
-        rootNavigatorKey.currentContext?.push('/attendance');
-      }
-    });
+    // NOTE: onMessageOpenedApp is handled in _ParentAppState._listenToFcmForDataRefresh
+    // to avoid duplicate listeners that cause double navigation.
 
     // Handle terminated state notification clicks
     RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
@@ -156,21 +123,7 @@ Future<void> _setupFirebaseMessaging() async {
       debugPrint('FCM Notification clicked from terminated state.');
       Future.delayed(const Duration(milliseconds: 1500), () {
         final type = initialMessage.data['type'] ?? 'attendance';
-        if (type == 'exam_schedule' || type == 'exams') {
-          rootNavigatorKey.currentContext?.push('/exams');
-        } else if (type == 'weekly_schedule' || type == 'schedule') {
-          rootNavigatorKey.currentContext?.push('/schedule');
-        } else if (type == 'assignment' || type == 'assignments') {
-          rootNavigatorKey.currentContext?.push('/assignments');
-        } else if (type == 'grade' || type == 'grades') {
-          rootNavigatorKey.currentContext?.push('/grades');
-        } else if (type == 'absence_request') {
-          rootNavigatorKey.currentContext?.push('/absence_history');
-        } else if (type == 'report' || type == 'alert' || type == 'notifications') {
-          rootNavigatorKey.currentContext?.push('/alerts');
-        } else {
-          rootNavigatorKey.currentContext?.push('/attendance');
-        }
+        _navigateByNotificationType(type);
       });
     }
 
@@ -198,9 +151,12 @@ Future<void> _setupFirebaseMessaging() async {
       debugPrint('Skipped FCM token registration: APNS token is not available.');
     } else {
       String? token = await FirebaseMessaging.instance.getToken();
-      debugPrint('================= FCM TOKEN =================');
-      debugPrint(token);
-      debugPrint('=============================================');
+      // Only print FCM token in debug mode to prevent token leakage
+      if (kDebugMode) {
+        debugPrint('================= FCM TOKEN =================');
+        debugPrint(token);
+        debugPrint('=============================================');
+      }
     }
   } catch (e) {
     debugPrint('Error getting FCM token: $e');
@@ -221,74 +177,78 @@ class _ParentAppState extends ConsumerState<ParentApp> {
     _listenToFcmForDataRefresh();
   }
 
+  /// Centralized data refresh handler for notification types.
+  void _refreshProviderByType(String type) {
+    switch (type) {
+      case 'attendance':
+      case 'absence':
+      case 'absence_request':
+        ref.invalidate(attendanceDataProvider);
+        break;
+      case 'assignment':
+      case 'assignments':
+        ref.invalidate(assignmentsProvider);
+        break;
+      case 'grade':
+      case 'grades':
+        ref.invalidate(gradesProvider);
+        break;
+      case 'exam_schedule':
+      case 'exams':
+        ref.invalidate(examsProvider);
+        break;
+      case 'weekly_schedule':
+      case 'schedule':
+        ref.invalidate(classSchedulesProvider);
+        break;
+      case 'report':
+      case 'alert':
+      case 'notifications':
+      default:
+        ref.invalidate(notificationsProvider);
+        break;
+    }
+  }
+
   void _listenToFcmForDataRefresh() {
-    // When a foreground FCM message arrives, refresh the relevant data provider
-    // immediately so the user sees up-to-date data without manual pull-to-refresh.
+    // Single centralized FCM foreground listener.
+    // Also shows local notification banner for heads-up display.
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final type = message.data['type'] ?? '';
       debugPrint('[ParentApp] FCM data refresh triggered. type=$type');
 
-      switch (type) {
-        case 'attendance':
-        case 'absence':
-        case 'absence_request':
-          ref.invalidate(attendanceDataProvider);
-          break;
-        case 'assignment':
-        case 'assignments':
-          ref.invalidate(assignmentsProvider);
-          break;
-        case 'grade':
-        case 'grades':
-          ref.invalidate(gradesProvider);
-          break;
-        case 'exam_schedule':
-        case 'exams':
-          ref.invalidate(examsProvider);
-          break;
-        case 'weekly_schedule':
-        case 'schedule':
-          ref.invalidate(classSchedulesProvider);
-          break;
-        case 'report':
-        case 'alert':
-        case 'notifications':
-        default:
-          ref.invalidate(notificationsProvider);
-          break;
+      // Refresh the relevant data provider
+      _refreshProviderByType(type);
+
+      // Show local notification banner (foreground only)
+      final notification = message.notification;
+      final android = message.notification?.android;
+      if (notification != null && android != null && !kIsWeb) {
+        _flutterLocalNotificationsPlugin.show(
+          id: notification.hashCode,
+          title: notification.title,
+          body: notification.body,
+          notificationDetails: NotificationDetails(
+            android: AndroidNotificationDetails(
+              _channel.id,
+              _channel.name,
+              channelDescription: _channel.description,
+              icon: '@mipmap/ic_launcher',
+              importance: Importance.max,
+              priority: Priority.high,
+              playSound: true,
+              enableVibration: true,
+            ),
+          ),
+          payload: type.isEmpty ? 'attendance' : type,
+        );
       }
     });
 
     // Also refresh on tap from background state
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       final type = message.data['type'] ?? '';
-      // Trigger refresh for the relevant section
-      switch (type) {
-        case 'attendance':
-        case 'absence':
-        case 'absence_request':
-          ref.invalidate(attendanceDataProvider);
-          break;
-        case 'assignment':
-        case 'assignments':
-          ref.invalidate(assignmentsProvider);
-          break;
-        case 'grade':
-        case 'grades':
-          ref.invalidate(gradesProvider);
-          break;
-        case 'exam_schedule':
-        case 'exams':
-          ref.invalidate(examsProvider);
-          break;
-        case 'weekly_schedule':
-        case 'schedule':
-          ref.invalidate(classSchedulesProvider);
-          break;
-        default:
-          ref.invalidate(notificationsProvider);
-          break;
-      }
+      _refreshProviderByType(type);
     });
   }
 

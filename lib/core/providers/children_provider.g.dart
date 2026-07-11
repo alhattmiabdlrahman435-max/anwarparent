@@ -41,7 +41,7 @@ final class ChildrenProvider
   }
 }
 
-String _$childrenHash() => r'94ebdb394cc0481cf753d15000b91844fabe9acc';
+String _$childrenHash() => r'f67eaf6552d1a23193177c337aaf6e2e4c235b72';
 
 abstract class _$Children extends $Notifier<List<Student>> {
   List<Student> build();
@@ -93,7 +93,7 @@ final class CurrentChildProvider
   }
 }
 
-String _$currentChildHash() => r'c18028cb344dff825926394e6df62a8d4d61aa7f';
+String _$currentChildHash() => r'99e6e93b2c8b48e7a9a2101aa80a51b084653a50';
 
 abstract class _$CurrentChild extends $Notifier<Student?> {
   Student? build();

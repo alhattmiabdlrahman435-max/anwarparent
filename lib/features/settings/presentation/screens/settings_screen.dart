@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:go_router/go_router.dart';
+
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_drawer.dart';
@@ -13,6 +13,7 @@ import 'about_app_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'contact_us_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -217,9 +218,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 child: Text(context.loc.cancel),
                               ),
                               TextButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   Navigator.pop(context);
-                                  context.go('/login');
+                                  await ref.read(authProvider.notifier).logout();
                                 },
                                 child: Text(
                                   context.loc.logout,

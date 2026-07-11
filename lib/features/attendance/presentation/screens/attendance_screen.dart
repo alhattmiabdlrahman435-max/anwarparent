@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
@@ -148,56 +148,81 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                     child: Column(
                       children: [
                         // Calendar Header
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.arrow_back_ios_new_rounded,
-                                size: 20,
-                                color: isDark
-                                    ? Colors.white
-                                    : const Color(0xFF062A5A),
+                        Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  size: 20,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF062A5A),
+                                ),
+                                onPressed: () {
+                                  final isAr = Localizations.localeOf(context).languageCode == 'ar';
+                                  setState(() {
+                                    if (isAr) {
+                                      // في اللغة العربية، السير باتجاه اليسار يعني الانتقال للمستقبل (الشهر القادم)
+                                      _focusedDay = DateTime(
+                                        _focusedDay.year,
+                                        _focusedDay.month + 1,
+                                        1,
+                                      );
+                                    } else {
+                                      // في اللغة الإنجليزية، السير باتجاه اليسار يعني الانتقال للماضي (الشهر السابق)
+                                      _focusedDay = DateTime(
+                                        _focusedDay.year,
+                                        _focusedDay.month - 1,
+                                        1,
+                                      );
+                                    }
+                                  });
+                                },
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _focusedDay = DateTime(
-                                    _focusedDay.year,
-                                    _focusedDay.month + 1,
-                                    1,
-                                  );
-                                });
-                              },
-                            ),
-                            Text(
-                              DateFormat('MMMM yyyy', Localizations.localeOf(context).languageCode).format(_focusedDay),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: isDark
-                                    ? Colors.white
-                                    : const Color(0xFF1E293B),
+                              Text(
+                                DateFormat('MMMM yyyy', Localizations.localeOf(context).languageCode).format(_focusedDay),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF1E293B),
+                                ),
                               ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 20,
-                                color: isDark
-                                    ? Colors.white
-                                    : const Color(0xFF062A5A),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 20,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF062A5A),
+                                ),
+                                onPressed: () {
+                                  final isAr = Localizations.localeOf(context).languageCode == 'ar';
+                                  setState(() {
+                                    if (isAr) {
+                                      // في اللغة العربية، السير باتجاه اليمين يعني الانتقال للماضي (الشهر السابق)
+                                      _focusedDay = DateTime(
+                                        _focusedDay.year,
+                                        _focusedDay.month - 1,
+                                        1,
+                                      );
+                                    } else {
+                                      // في اللغة الإنجليزية، السير باتجاه اليمين يعني الانتقال للمستقبل (الشهر القادم)
+                                      _focusedDay = DateTime(
+                                        _focusedDay.year,
+                                        _focusedDay.month + 1,
+                                        1,
+                                      );
+                                    }
+                                  });
+                                },
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _focusedDay = DateTime(
-                                    _focusedDay.year,
-                                    _focusedDay.month - 1,
-                                    1,
-                                  );
-                                });
-                              },
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 16),
                         _buildCustomCalendarGrid(record, isDark),
