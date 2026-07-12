@@ -70,7 +70,15 @@ class AbsenceRequests extends _$AbsenceRequests {
   }
 
   Future<void> refresh() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _loadRequests());
+    if (!ref.mounted) return;
+    if (state.hasValue) {
+      final result = await AsyncValue.guard(() => _loadRequests());
+      if (ref.mounted) {
+        state = result;
+      }
+    } else {
+      state = const AsyncValue.loading();
+      state = await AsyncValue.guard(() => _loadRequests());
+    }
   }
 }

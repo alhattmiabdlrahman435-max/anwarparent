@@ -32,6 +32,11 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen>
         setState(() {}); // trigger rebuild to show correct exams for the term
       }
     });
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(examsProvider.notifier).refresh();
+      }
+    });
   }
 
   @override

@@ -23,6 +23,16 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
   DateTime _focusedDate = DateTime.now();
   int _selectedTab = 0; // 0: Active/Pending, 1: Completed/Submitted
 
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(assignmentsProvider.notifier).refresh();
+      }
+    });
+  }
+
   bool isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }

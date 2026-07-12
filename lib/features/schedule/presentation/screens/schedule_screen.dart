@@ -32,6 +32,11 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
   void initState() {
     super.initState();
     _determineInitialDay();
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(classSchedulesProvider.notifier).refresh();
+      }
+    });
   }
 
   void _determineInitialDay() {

@@ -10,11 +10,26 @@ import '../../../../core/providers/children_provider.dart';
 import '../../../../core/providers/finance_provider.dart';
 import '../../../../core/models/student_finance.dart';
 
-class FeesScreen extends ConsumerWidget {
+class FeesScreen extends ConsumerStatefulWidget {
   const FeesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FeesScreen> createState() => _FeesScreenState();
+}
+
+class _FeesScreenState extends ConsumerState<FeesScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(financeProvider.notifier).refresh();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
     final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;

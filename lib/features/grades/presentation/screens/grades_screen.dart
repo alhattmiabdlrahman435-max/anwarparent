@@ -19,6 +19,16 @@ class GradesScreen extends ConsumerStatefulWidget {
 class _GradesScreenState extends ConsumerState<GradesScreen> {
   int _selectedTerm = 1;
 
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(gradesProvider.notifier).refresh();
+      }
+    });
+  }
+
   IconData _getIconData(String iconName) {
     switch (iconName) {
       case 'function':

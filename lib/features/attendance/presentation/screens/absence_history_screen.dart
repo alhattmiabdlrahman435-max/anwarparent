@@ -6,11 +6,26 @@ import '../../../../core/providers/absence_requests_provider.dart';
 import '../../../../core/models/absence_request.dart';
 import '../../../../core/extensions/localization_extension.dart';
 
-class AbsenceHistoryScreen extends ConsumerWidget {
+class AbsenceHistoryScreen extends ConsumerStatefulWidget {
   const AbsenceHistoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AbsenceHistoryScreen> createState() => _AbsenceHistoryScreenState();
+}
+
+class _AbsenceHistoryScreenState extends ConsumerState<AbsenceHistoryScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(absenceRequestsProvider.notifier).refresh();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
     final requestsAsync = ref.watch(absenceRequestsProvider);

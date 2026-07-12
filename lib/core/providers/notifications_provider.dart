@@ -75,7 +75,14 @@ class Notifications extends _$Notifications {
 
   Future<void> refresh() async {
     if (!ref.mounted) return;
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _loadNotifications());
+    if (state.hasValue) {
+      final result = await AsyncValue.guard(() => _loadNotifications());
+      if (ref.mounted) {
+        state = result;
+      }
+    } else {
+      state = const AsyncValue.loading();
+      state = await AsyncValue.guard(() => _loadNotifications());
+    }
   }
 }

@@ -11,6 +11,9 @@ import 'core/providers/assignments_provider.dart';
 import 'core/providers/grades_provider.dart';
 import 'core/providers/exams_provider.dart';
 import 'core/providers/schedule_provider.dart';
+import 'core/providers/children_provider.dart';
+import 'core/providers/absence_requests_provider.dart';
+import 'core/providers/finance_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
@@ -175,12 +178,46 @@ class ParentApp extends ConsumerStatefulWidget {
   ConsumerState<ParentApp> createState() => _ParentAppState();
 }
 
-class _ParentAppState extends ConsumerState<ParentApp> {
+class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _listenToFcmForDataRefresh();
+    // Fetch initial data immediately on launch
+    Future.microtask(() => _refreshAllData());
   }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshAllData();
+    }
+  }
+
+  void _refreshAllData() {
+    try {
+      debugPrint('[ParentApp] Refreshing all data in background...');
+      ref.read(childrenProvider.notifier).refresh();
+      ref.read(notificationsProvider.notifier).refresh();
+      ref.read(attendanceDataProvider.notifier).refresh();
+      ref.read(assignmentsProvider.notifier).refresh();
+      ref.read(gradesProvider.notifier).refresh();
+      ref.read(examsProvider.notifier).refresh();
+      ref.read(classSchedulesProvider.notifier).refresh();
+      ref.read(absenceRequestsProvider.notifier).refresh();
+      ref.read(financeProvider.notifier).refresh();
+    } catch (e) {
+      debugPrint('[ParentApp] Error during background refresh: $e');
+    }
+  }
+
 
   /// Centralized data refresh handler for notification types.
   void _refreshProviderByType(String type) {
