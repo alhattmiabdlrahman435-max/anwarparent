@@ -18,13 +18,22 @@ class Settings extends _$Settings {
       final prefs = await SharedPreferences.getInstance();
       final isDark = prefs.getBool('isDark') ?? false;
       final languageCode = prefs.getString('languageCode') ?? 'ar';
+      final fontSizeName = prefs.getString('fontSize') ?? 'medium';
+
+      AppFontSize fontSize = AppFontSize.medium;
+      if (fontSizeName == 'small') {
+        fontSize = AppFontSize.small;
+      } else if (fontSizeName == 'large') {
+        fontSize = AppFontSize.large;
+      }
 
       state = state.copyWith(
         themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
         locale: Locale(languageCode),
+        fontSize: fontSize,
       );
     } catch (_) {
-      // In case of error, defaults (ar, light theme) returned by build() will be preserved.
+      // In case of error, defaults returned by build() will be preserved.
     }
   }
 
@@ -41,5 +50,11 @@ class Settings extends _$Settings {
     final newLang = state.locale.languageCode == 'ar' ? 'en' : 'ar';
     await prefs.setString('languageCode', newLang);
     state = state.copyWith(locale: Locale(newLang));
+  }
+
+  Future<void> setFontSize(AppFontSize size) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('fontSize', size.name);
+    state = state.copyWith(fontSize: size);
   }
 }

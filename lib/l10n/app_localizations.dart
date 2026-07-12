@@ -1045,6 +1045,30 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تحديد الكل كمقروء'**
   String get markAllAsRead;
+
+  /// No description provided for @fontSize.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجم الخط'**
+  String get fontSize;
+
+  /// No description provided for @fontSizeSmall.
+  ///
+  /// In ar, this message translates to:
+  /// **'صغير'**
+  String get fontSizeSmall;
+
+  /// No description provided for @fontSizeMedium.
+  ///
+  /// In ar, this message translates to:
+  /// **'طبيعي'**
+  String get fontSizeMedium;
+
+  /// No description provided for @fontSizeLarge.
+  ///
+  /// In ar, this message translates to:
+  /// **'كبير'**
+  String get fontSizeLarge;
 }
 
 class _AppLocalizationsDelegate

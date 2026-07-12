@@ -497,4 +497,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get markAllAsRead => 'تحديد الكل كمقروء';
+
+  @override
+  String get fontSize => 'حجم الخط';
+
+  @override
+  String get fontSizeSmall => 'صغير';
+
+  @override
+  String get fontSizeMedium => 'طبيعي';
+
+  @override
+  String get fontSizeLarge => 'كبير';
 }
