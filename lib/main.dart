@@ -17,6 +17,7 @@ import 'firebase_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
+import 'core/network/pusher_service.dart';
 
 final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -70,6 +71,10 @@ void main() async {
 
   // Request permissions and print FCM Token asynchronously (non-blocking)
   _setupFirebaseMessaging();
+
+  // Initialize Pusher Client connection to Reverb
+  PusherService().init();
+  PusherService().connect();
 
   runApp(const ProviderScope(child: ParentApp()));
 }

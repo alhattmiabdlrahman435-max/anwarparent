@@ -33,7 +33,9 @@ Dio apiClient(Ref ref) {
         return handler.next(options);
       },
       onError: (DioException e, handler) {
-        if (e.response?.statusCode == 401 && !e.requestOptions.path.contains('login')) {
+        if (e.response?.statusCode == 401 &&
+            !e.requestOptions.path.contains('login') &&
+            !e.requestOptions.path.contains('logout')) {
           // Trigger logout if token is expired/invalid
           ref.read(authProvider.notifier).logout();
         }

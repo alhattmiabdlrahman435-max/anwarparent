@@ -1,16 +1,20 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import '../config/app_config.dart';
 
 class AppConstants {
   static String get baseUrl {
-    if (kDebugMode) {
-      try {
-        if (Platform.isAndroid) {
-          return 'http://10.0.2.2:8000/api/';
-        }
-      } catch (_) {}
+    if (AppConfig.isLocal) {
+      if (kDebugMode) {
+        try {
+          if (Platform.isAndroid) {
+            return 'http://10.0.2.2:8000/api/';
+          }
+        } catch (_) {}
+      }
+      return 'http://127.0.0.1:8000/api/';
     }
-    return 'http://127.0.0.1:8000/api/';
+    return '${AppConfig.baseUrl}/api/';
   }
 
   // Storage Keys
