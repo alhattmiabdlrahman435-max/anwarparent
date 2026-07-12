@@ -268,6 +268,14 @@ class _ParentAppState extends ConsumerState<ParentApp> {
       darkTheme: AppTheme.darkTheme,
       themeMode: settings.themeMode,
       routerConfig: router,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(settings.fontSizeFactor),
+          ),
+          child: child!,
+        );
+      },
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

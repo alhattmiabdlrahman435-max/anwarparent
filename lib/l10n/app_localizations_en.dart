@@ -502,4 +502,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get markAllAsRead => 'Mark all as read';
+
+  @override
+  String get fontSize => 'Font Size';
+
+  @override
+  String get fontSizeSmall => 'Small';
+
+  @override
+  String get fontSizeMedium => 'Normal';
+
+  @override
+  String get fontSizeLarge => 'Large';
 }

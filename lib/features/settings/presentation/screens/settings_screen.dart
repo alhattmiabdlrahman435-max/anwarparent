@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/providers/settings_provider.dart';
+import '../../../../core/models/app_settings.dart';
 import '../../../../core/extensions/localization_extension.dart';
 
 import 'about_app_screen.dart';
@@ -126,6 +127,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           rightIcon: PhosphorIcons.textAa(
                             PhosphorIconsStyle.bold,
                           ),
+                        ),
+                      ),
+                      _Divider(),
+                      _SettingsTile(
+                        icon: PhosphorIcons.textAa(
+                          PhosphorIconsStyle.duotone,
+                        ),
+                        title: context.loc.fontSize,
+                        trailing: _FontSizeToggle(
+                          currentSize: settings.fontSize,
+                          onChanged: (newSize) {
+                            ref
+                                .read(settingsProvider.notifier)
+                                .setFontSize(newSize);
+                          },
                         ),
                       ),
                       _Divider(),
@@ -535,6 +551,99 @@ class _SegmentedToggle extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FontSizeToggle extends StatelessWidget {
+  const _FontSizeToggle({
+    required this.currentSize,
+    required this.onChanged,
+  });
+
+  final AppFontSize currentSize;
+  final ValueChanged<AppFontSize> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.black.withValues(alpha: 0.3)
+            : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildSegment(
+            context: context,
+            isSelected: currentSize == AppFontSize.small,
+            label: context.loc.fontSizeSmall,
+            onTap: () => onChanged(AppFontSize.small),
+          ),
+          const SizedBox(width: 4),
+          _buildSegment(
+            context: context,
+            isSelected: currentSize == AppFontSize.medium,
+            label: context.loc.fontSizeMedium,
+            onTap: () => onChanged(AppFontSize.medium),
+          ),
+          const SizedBox(width: 4),
+          _buildSegment(
+            context: context,
+            isSelected: currentSize == AppFontSize.large,
+            label: context.loc.fontSizeLarge,
+            onTap: () => onChanged(AppFontSize.large),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSegment({
+    required BuildContext context,
+    required bool isSelected,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.fastOutSlowIn,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isDark ? const Color(0xFF334155) : Colors.white)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected && !isDark
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : [],
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+            color: isSelected
+                ? (isDark ? Colors.white : AppColors.textPrimary)
+                : (isDark ? Colors.white38 : Colors.grey),
+          ),
         ),
       ),
     );
