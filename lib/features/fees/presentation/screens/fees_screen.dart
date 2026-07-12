@@ -26,7 +26,13 @@ class FeesScreen extends ConsumerWidget {
 
     StudentFinanceSummary? financeSummary;
     if (currentChild != null && financeRecords.isNotEmpty) {
-      financeSummary = financeRecords.where((f) => f.studentId == currentChild.id).firstOrNull;
+      try {
+        financeSummary = financeRecords.firstWhere(
+          (f) => f.studentId == currentChild.id,
+        );
+      } catch (_) {
+        financeSummary = null;
+      }
     }
 
     return Scaffold(
@@ -64,8 +70,11 @@ class FeesScreen extends ConsumerWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40.0),
                         child: Text(
-                          context.loc.noFeesRegistered,
-                          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                          'لا توجد رسوم مالية مسجلة لهذا الطالب',
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     )
@@ -83,7 +92,9 @@ class FeesScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF062A5A).withValues(alpha: 0.3),
+                            color: const Color(
+                              0xFF062A5A,
+                            ).withValues(alpha: 0.3),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -102,7 +113,9 @@ class FeesScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            context.loc.currencySar(financeSummary.totalFees.toStringAsFixed(0)),
+                            context.loc.currencySar(
+                              financeSummary.totalFees.toStringAsFixed(0),
+                            ),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 28,
@@ -127,7 +140,9 @@ class FeesScreen extends ConsumerWidget {
                               Expanded(
                                 child: _buildSummaryItem(
                                   context.loc.remaining,
-                                  financeSummary.remainingFees.toStringAsFixed(0),
+                                  financeSummary.remainingFees.toStringAsFixed(
+                                    0,
+                                  ),
                                   Colors.redAccent,
                                 ),
                               ),
@@ -155,7 +170,7 @@ class FeesScreen extends ConsumerWidget {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 20.0),
                           child: Text(
-                            context.loc.noPaymentsRegistered,
+                            'لم يتم تسجيل أي عمليات دفع بعد',
                             style: TextStyle(color: subTextColor),
                           ),
                         ),
@@ -166,8 +181,13 @@ class FeesScreen extends ConsumerWidget {
                           padding: const EdgeInsets.only(bottom: 12.0),
                           child: _buildPaymentCard(
                             context: context,
-                            date: DateFormat('dd MMM yyyy', Localizations.localeOf(context).languageCode).format(payment.paymentDate),
-                            amount: context.loc.currencySar(payment.amount.toStringAsFixed(0)),
+                            date: DateFormat(
+                              'dd MMM yyyy',
+                              Localizations.localeOf(context).languageCode,
+                            ).format(payment.paymentDate),
+                            amount: context.loc.currencySar(
+                              payment.amount.toStringAsFixed(0),
+                            ),
                             refNo: payment.referenceNo,
                             cardColor: cardColor,
                             textColor: textColor,

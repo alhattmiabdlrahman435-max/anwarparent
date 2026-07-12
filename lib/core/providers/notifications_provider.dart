@@ -5,7 +5,7 @@ import '../network/api_client.dart';
 
 part 'notifications_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class Notifications extends _$Notifications {
   @override
   FutureOr<List<AppNotification>> build() async {
@@ -19,6 +19,8 @@ class Notifications extends _$Notifications {
     try {
       final dio = ref.read(apiClientProvider);
       final response = await dio.get('notifications');
+
+      if (!ref.mounted) return [];
 
       if (response.data != null && response.data['success'] == true) {
         final List<dynamic> list = response.data['notifications'] ?? [];
@@ -34,6 +36,9 @@ class Notifications extends _$Notifications {
     try {
       final dio = ref.read(apiClientProvider);
       final response = await dio.put('notifications/$id/read');
+
+      if (!ref.mounted) return;
+
       if (response.data != null && response.data['success'] == true) {
         final currentList = state.value ?? [];
         state = AsyncValue.data([
@@ -49,7 +54,27 @@ class Notifications extends _$Notifications {
     }
   }
 
+  Future<void> markAllAsRead() async {
+    try {
+      final dio = ref.read(apiClientProvider);
+      final response = await dio.post('notifications/read-all');
+
+      if (!ref.mounted) return;
+
+      if (response.data != null && response.data['success'] == true) {
+        final currentList = state.value ?? [];
+        state = AsyncValue.data([
+          for (final notif in currentList)
+            notif.copyWith(isRead: true)
+        ]);
+      }
+    } catch (e) {
+      debugPrint('Error marking all notifications as read: $e');
+    }
+  }
+
   Future<void> refresh() async {
+    if (!ref.mounted) return;
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => _loadNotifications());
   }

@@ -19,7 +19,7 @@ final class ExamsProvider extends $NotifierProvider<Exams, List<ExamSchedule>> {
         argument: null,
         retry: null,
         name: r'examsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -40,7 +40,7 @@ final class ExamsProvider extends $NotifierProvider<Exams, List<ExamSchedule>> {
   }
 }
 
-String _$examsHash() => r'26a0e054e44ccd511a9c1db8e9aec73fc2f57e01';
+String _$examsHash() => r'66a54c29e456a0bcab912099e4c8c3e6222a6c1e';
 
 abstract class _$Exams extends $Notifier<List<ExamSchedule>> {
   List<ExamSchedule> build();

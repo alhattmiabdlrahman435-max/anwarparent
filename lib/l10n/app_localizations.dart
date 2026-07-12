@@ -1039,6 +1039,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'يرجى كتابة سبب الغياب'**
   String get pleaseEnterAbsenceReason;
+
+  /// No description provided for @markAllAsRead.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديد الكل كمقروء'**
+  String get markAllAsRead;
 }
 
 class _AppLocalizationsDelegate

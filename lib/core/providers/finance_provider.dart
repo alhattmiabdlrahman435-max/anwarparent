@@ -19,7 +19,7 @@ class Finance extends _$Finance {
 
     Future.microtask(() => _loadFinanceForKids(kids));
 
-    return state;
+    return [];
   }
 
   Future<void> _loadFinanceForKids(List<Student> kids) async {

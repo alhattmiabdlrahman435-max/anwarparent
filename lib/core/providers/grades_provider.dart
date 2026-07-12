@@ -20,7 +20,7 @@ class Grades extends _$Grades {
     // Schedule the load in a microtask to avoid mutating state during the build phase
     Future.microtask(() => _loadGradesForKids(kids));
 
-    return state;
+    return [];
   }
 
   Future<void> _loadGradesForKids(List<Student> kids) async {
@@ -30,49 +30,52 @@ class Grades extends _$Grades {
       // Load grades for all children in parallel for faster loading
       final results = await Future.wait(
         kids.map((kid) async {
-          final response = await dio.get('grades/detailed/${kid.id}');
-          if (response.data != null && response.data['success'] == true) {
-            final List<dynamic> list = response.data['grades'] ?? [];
-            
-            // Group by subject_id
-            final Map<int, List<dynamic>> grouped = {};
-            for (final record in list) {
-              final subjectId = record['subject_id'] as int;
-              grouped.putIfAbsent(subjectId, () => []).add(record);
+          try {
+            final response = await dio.get('grades/detailed/${kid.id}');
+            if (response.data != null && response.data['success'] == true) {
+              final List<dynamic> list = response.data['grades'] ?? [];
+              
+              // Group by subject_id
+              final Map<int, List<dynamic>> grouped = {};
+              for (final record in list) {
+                final subjectId = record['subject_id'] as int;
+                grouped.putIfAbsent(subjectId, () => []).add(record);
+              }
+
+              // Build SubjectGrade for each subject
+              final List<SubjectGrade> kidGrades = [];
+              grouped.forEach((subjectId, records) {
+                final firstRecord = records.first;
+                final subjectName = firstRecord['subject']?['name_ar'] ?? '';
+                final iconName = _getIconForSubject(subjectName);
+
+                final term1Grade = _buildTermGrade(records, 'term1');
+                final term2Grade = _buildTermGrade(records, 'term2');
+
+                kidGrades.add(
+                  SubjectGrade(
+                    id: '${kid.id}_$subjectId',
+                    studentId: kid.id,
+                    subjectName: subjectName,
+                    iconName: iconName,
+                    term1: term1Grade,
+                    term2: term2Grade,
+                  ),
+                );
+              });
+              return kidGrades;
             }
-
-            // Build SubjectGrade for each subject
-            final List<SubjectGrade> kidGrades = [];
-            grouped.forEach((subjectId, records) {
-              final firstRecord = records.first;
-              final subjectName = firstRecord['subject']?['name_ar'] ?? '';
-              final iconName = _getIconForSubject(subjectName);
-
-              final term1Grade = _buildTermGrade(records, 'term1');
-              final term2Grade = _buildTermGrade(records, 'term2');
-
-              kidGrades.add(
-                SubjectGrade(
-                  id: '${kid.id}_$subjectId',
-                  studentId: kid.id,
-                  subjectName: subjectName,
-                  iconName: iconName,
-                  term1: term1Grade,
-                  term2: term2Grade,
-                ),
-              );
-            });
-            return kidGrades;
+          } catch (e) {
+            debugPrint('Error loading grades for student ${kid.id}: $e');
           }
           return <SubjectGrade>[];
         }),
       );
 
-      final allGrades = results.expand((grades) => grades).toList();
+      if (!ref.mounted) return;
 
-      if (ref.mounted) {
-        state = allGrades;
-      }
+      final allGrades = results.expand((grades) => grades).toList();
+      state = allGrades;
     } catch (e) {
       debugPrint('Error loading detailed grades: $e');
     }

@@ -24,6 +24,25 @@ class NotificationsScreen extends ConsumerWidget {
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final subTextColor = isDark ? Colors.white70 : const Color(0xFF64748B);
 
+    final hasUnread = notificationsAsync.maybeWhen(
+      data: (allNotifications) {
+        var notifications = allNotifications
+            .where((n) => n.type != 'alert' && n.type != 'report')
+            .toList();
+
+        if (currentChild != null) {
+          notifications = notifications.where((n) {
+            if (n.targetType == 'all_parents') return true;
+            if (n.targetType == 'by_student' && n.targetId == currentChild.id) return true;
+            if (n.targetType == 'by_class' && n.targetId == currentChild.classId) return true;
+            return false;
+          }).toList();
+        }
+        return notifications.any((n) => !n.isRead);
+      },
+      orElse: () => false,
+    );
+
     return Scaffold(
       backgroundColor: bgColor,
       drawer: const AppDrawer(),
@@ -34,7 +53,22 @@ class NotificationsScreen extends ConsumerWidget {
             parent: AlwaysScrollableScrollPhysics(),
           ),
           slivers: [
-            AppSliverHeader(title: context.loc.notifications),
+            AppSliverHeader(
+              title: context.loc.notifications,
+              trailing: hasUnread
+                  ? CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        ref.read(notificationsProvider.notifier).markAllAsRead();
+                      },
+                      child: Icon(
+                        Icons.done_all_rounded,
+                        color: isDark ? Colors.white : const Color(0xFF062A5A),
+                        size: 28,
+                      ),
+                    )
+                  : null,
+            ),
             notificationsAsync.when(
               loading: () => const SliverFillRemaining(
                 child: Center(child: CircularProgressIndicator()),

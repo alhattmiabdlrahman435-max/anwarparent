@@ -494,4 +494,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get pleaseEnterAbsenceReason => 'يرجى كتابة سبب الغياب';
+
+  @override
+  String get markAllAsRead => 'تحديد الكل كمقروء';
 }

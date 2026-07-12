@@ -198,5 +198,6 @@
   "noPublicNotifications": "No public notifications currently",
   "noFeesRegistered": "No tuition fees registered for this student",
   "noPaymentsRegistered": "No payments have been registered yet",
-  "pleaseEnterAbsenceReason": "Please enter a reason for absence"
+  "pleaseEnterAbsenceReason": "Please enter a reason for absence",
+  "markAllAsRead": "Mark all as read"
 }

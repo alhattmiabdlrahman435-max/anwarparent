@@ -66,9 +66,8 @@ class AttendanceData extends _$AttendanceData {
 
       final allRecords = results.whereType<AttendanceRecord>().toList();
 
-      if (ref.mounted) {
-        state = allRecords;
-      }
+      if (!ref.mounted) return;
+      state = allRecords;
     } catch (e) {
       debugPrint('Error loading attendance: $e');
     }

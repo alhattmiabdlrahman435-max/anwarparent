@@ -198,5 +198,6 @@
   "noPublicNotifications": "لا توجد إشعارات عامة حالياً",
   "noFeesRegistered": "لا توجد رسوم مالية مسجلة لهذا الطالب",
   "noPaymentsRegistered": "لم يتم تسجيل أي عمليات دفع بعد",
-  "pleaseEnterAbsenceReason": "يرجى كتابة سبب الغياب"
+  "pleaseEnterAbsenceReason": "يرجى كتابة سبب الغياب",
+  "markAllAsRead": "تحديد الكل كمقروء"
 }

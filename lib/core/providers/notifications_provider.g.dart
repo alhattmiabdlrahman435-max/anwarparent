@@ -20,7 +20,7 @@ final class NotificationsProvider
         argument: null,
         retry: null,
         name: r'notificationsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -33,7 +33,7 @@ final class NotificationsProvider
   Notifications create() => Notifications();
 }
 
-String _$notificationsHash() => r'e2c658f3955d9db2e1a5ba56eda1d864532c8885';
+String _$notificationsHash() => r'1b3a3bfd9d2d20216d3ab7a787a797ab8a4489ba';
 
 abstract class _$Notifications extends $AsyncNotifier<List<AppNotification>> {
   FutureOr<List<AppNotification>> build();

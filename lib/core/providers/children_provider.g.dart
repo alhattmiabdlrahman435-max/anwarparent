@@ -41,7 +41,7 @@ final class ChildrenProvider
   }
 }
 
-String _$childrenHash() => r'f67eaf6552d1a23193177c337aaf6e2e4c235b72';
+String _$childrenHash() => r'addb54b85cde98d9076b79dd89fe7e7d27191bb6';
 
 abstract class _$Children extends $Notifier<List<Student>> {
   List<Student> build();

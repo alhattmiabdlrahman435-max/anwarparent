@@ -499,4 +499,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pleaseEnterAbsenceReason => 'Please enter a reason for absence';
+
+  @override
+  String get markAllAsRead => 'Mark all as read';
 }

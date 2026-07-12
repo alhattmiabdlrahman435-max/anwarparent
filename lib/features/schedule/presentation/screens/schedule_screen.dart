@@ -25,7 +25,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     'sunday',
     'monday',
     'tuesday',
-    'wednesday'
+    'wednesday',
   ];
 
   @override
@@ -129,11 +129,18 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     ClassSchedule? schedule;
 
     if (currentChild != null) {
-      schedule = allSchedules.where((s) => s.studentId == currentChild.id).firstOrNull;
+      try {
+        schedule = allSchedules.firstWhere(
+          (s) => s.studentId == currentChild.id,
+        );
+      } catch (_) {
+        schedule = null;
+      }
     }
 
     final now = DateTime.now();
-    final isWeekend = now.weekday == DateTime.thursday || now.weekday == DateTime.friday;
+    final isWeekend =
+        now.weekday == DateTime.thursday || now.weekday == DateTime.friday;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -145,203 +152,246 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
             parent: AlwaysScrollableScrollPhysics(),
           ),
           slivers: [
-          AppSliverHeader(
-            title: context.loc.classSchedule,
-            showChildSwitcher: true,
-            trailing: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () {
-                setState(() {
-                  _isGridView = !_isGridView;
-                });
-              },
-              child: Icon(
-                _isGridView ? CupertinoIcons.list_bullet : CupertinoIcons.grid,
-                color: isDark ? Colors.white : const Color(0xFF062A5A),
+            AppSliverHeader(
+              title: context.loc.classSchedule,
+              showChildSwitcher: true,
+              trailing: CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  setState(() {
+                    _isGridView = !_isGridView;
+                  });
+                },
+                child: Icon(
+                  _isGridView
+                      ? CupertinoIcons.list_bullet
+                      : CupertinoIcons.grid,
+                  color: isDark ? Colors.white : const Color(0xFF062A5A),
+                ),
               ),
             ),
-          ),
-          if (currentChild == null)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Text(
-                    context.loc.pleaseSelectChildToViewSchedule,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'GoogleSans',
-                      fontSize: 16,
-                      color: subTextColor,
+            if (currentChild == null)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Text(
+                      context.loc.pleaseSelectChildToViewSchedule,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'GoogleSans',
+                        fontSize: 16,
+                        color: subTextColor,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            )
-          else if (schedule == null)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Text(
-                    context.loc.noScheduleAddedFor(''),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'GoogleSans',
-                      fontSize: 16,
-                      color: subTextColor,
+              )
+            else if (schedule == null)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Text(
+                      context.loc.noScheduleAddedFor(''),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'GoogleSans',
+                        fontSize: 16,
+                        color: subTextColor,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            )
-          else ...[
-            // Optional Weekend Notice
-            if (isWeekend && !_isGridView)
-              SliverToBoxAdapter(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(CupertinoIcons.info, color: Colors.amber, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          context.loc.weekendNote,
-                          style: const TextStyle(
-                            fontFamily: 'GoogleSans',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.amber,
+              )
+            else ...[
+              // Optional Weekend Notice
+              if (isWeekend && !_isGridView)
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.amber.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          CupertinoIcons.info,
+                          color: Colors.amber,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            context.loc.weekendNote,
+                            style: const TextStyle(
+                              fontFamily: 'GoogleSans',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.amber,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-            if (!_isGridView) ...[
-              // Day Tabs (Saturday to Wednesday)
-              SliverToBoxAdapter(
-                child: Container(
-                  height: 54,
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _daysKeys.length,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    physics: const BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final dayKey = _daysKeys[index];
-                      final isSelected = index == _selectedDayIndex;
-                      final isTodayDay = _isToday(dayKey);
+              if (!_isGridView) ...[
+                // Day Tabs (Saturday to Wednesday)
+                SliverToBoxAdapter(
+                  child: Container(
+                    height: 54,
+                    margin: const EdgeInsets.symmetric(vertical: 12),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _daysKeys.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      physics: const BouncingScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final dayKey = _daysKeys[index];
+                        final isSelected = index == _selectedDayIndex;
+                        final isTodayDay = _isToday(dayKey);
 
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedDayIndex = index;
-                          });
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 18),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? (isDark ? Colors.white : const Color(0xFF062A5A))
-                                : (isDark ? const Color(0xFF1E293B) : Colors.white),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isSelected
-                                  ? (isDark ? Colors.white : const Color(0xFF062A5A))
-                                  : (isTodayDay
-                                      ? (isDark ? Colors.white30 : const Color(0xFF062A5A).withValues(alpha: 0.3))
-                                      : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.2))),
-                              width: 1.5,
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedDayIndex = index;
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
                             ),
-                            boxShadow: [
-                              if (isSelected)
-                                BoxShadow(
-                                  color: (isDark ? Colors.black : const Color(0xFF062A5A)).withValues(alpha: 0.15),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                )
-                            ],
-                          ),
-                          child: Center(
-                            child: Row(
-                              children: [
-                                Text(
-                                  _getDayTranslation(context, dayKey),
-                                  style: TextStyle(
-                                    fontFamily: 'GoogleSans',
-                                    fontSize: 14,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                    color: isSelected
-                                        ? (isDark ? const Color(0xFF0F172A) : Colors.white)
-                                        : textColor,
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? (isDark
+                                        ? Colors.white
+                                        : const Color(0xFF062A5A))
+                                  : (isDark
+                                        ? const Color(0xFF1E293B)
+                                        : Colors.white),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected
+                                    ? (isDark
+                                          ? Colors.white
+                                          : const Color(0xFF062A5A))
+                                    : (isTodayDay
+                                          ? (isDark
+                                                ? Colors.white30
+                                                : const Color(
+                                                    0xFF062A5A,
+                                                  ).withValues(alpha: 0.3))
+                                          : (isDark
+                                                ? Colors.white10
+                                                : Colors.grey.withValues(
+                                                    alpha: 0.2,
+                                                  ))),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                if (isSelected)
+                                  BoxShadow(
+                                    color:
+                                        (isDark
+                                                ? Colors.black
+                                                : const Color(0xFF062A5A))
+                                            .withValues(alpha: 0.15),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
                                   ),
-                                ),
-                                if (isTodayDay) ...[
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: BoxDecoration(
+                              ],
+                            ),
+                            child: Center(
+                              child: Row(
+                                children: [
+                                  Text(
+                                    _getDayTranslation(context, dayKey),
+                                    style: TextStyle(
+                                      fontFamily: 'GoogleSans',
+                                      fontSize: 14,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.w600,
                                       color: isSelected
-                                          ? (isDark ? const Color(0xFF0F172A) : Colors.white)
-                                          : Colors.teal,
-                                      shape: BoxShape.circle,
+                                          ? (isDark
+                                                ? const Color(0xFF0F172A)
+                                                : Colors.white)
+                                          : textColor,
                                     ),
                                   ),
-                                ]
-                              ],
+                                  if (isTodayDay) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? (isDark
+                                                  ? const Color(0xFF0F172A)
+                                                  : Colors.white)
+                                            : Colors.teal,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                // Timeline List View
+                Builder(
+                  builder: (context) {
+                    final selectedDayKey = _daysKeys[_selectedDayIndex];
+                    final daySchedule = schedule!.days.firstWhere(
+                      (d) => d.dayKey == selectedDayKey,
+                      orElse: () =>
+                          ClassScheduleDay(dayKey: selectedDayKey, periods: []),
+                    );
+
+                    if (daySchedule.periods.isEmpty) {
+                      return SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Text(
+                            context.loc.noScheduleAddedFor(
+                              _getDayTranslation(context, selectedDayKey),
+                            ),
+                            style: TextStyle(
+                              fontFamily: 'GoogleSans',
+                              color: subTextColor,
                             ),
                           ),
                         ),
                       );
-                    },
-                  ),
-                ),
-              ),
+                    }
 
-              // Timeline List View
-              Builder(
-                builder: (context) {
-                  final selectedDayKey = _daysKeys[_selectedDayIndex];
-                  final daySchedule = schedule!.days.firstWhere(
-                    (d) => d.dayKey == selectedDayKey,
-                    orElse: () => ClassScheduleDay(dayKey: selectedDayKey, periods: []),
-                  );
-
-                  if (daySchedule.periods.isEmpty) {
-                    return SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: Text(
-                          context.loc.noScheduleAddedFor(_getDayTranslation(context, selectedDayKey)),
-                          style: TextStyle(
-                            fontFamily: 'GoogleSans',
-                            color: subTextColor,
-                          ),
-                        ),
+                    return SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
                       ),
-                    );
-                  }
-
-                  return SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
                           final period = daySchedule.periods[index];
                           final color = _getPeriodColor(period.periodNumber);
 
@@ -352,7 +402,9 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                                  color: Colors.black.withValues(
+                                    alpha: isDark ? 0.2 : 0.05,
+                                  ),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -364,16 +416,15 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                 child: Row(
                                   children: [
                                     // Accent color indicator line
-                                    Container(
-                                      width: 6,
-                                      color: color,
-                                    ),
+                                    Container(width: 6, color: color),
                                     const SizedBox(width: 16),
                                     // Period badge
                                     Container(
                                       width: 40,
                                       height: 40,
-                                      margin: const EdgeInsets.symmetric(vertical: 16),
+                                      margin: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: color.withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
@@ -394,13 +445,19 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                     // Subject & Teacher details
                                     Expanded(
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Text(
-                                              period.subjectName,
+                                              context.translateMock(
+                                                period.subjectName,
+                                              ),
                                               style: TextStyle(
                                                 fontFamily: 'GoogleSans',
                                                 fontSize: 16,
@@ -418,7 +475,9 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                                 ),
                                                 const SizedBox(width: 4),
                                                 Text(
-                                                  period.teacherName,
+                                                  context.translateMock(
+                                                    period.teacherName,
+                                                  ),
                                                   style: TextStyle(
                                                     fontFamily: 'GoogleSans',
                                                     fontSize: 12,
@@ -433,10 +492,17 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                     ),
                                     // Timing badge
                                     Container(
-                                      margin: const EdgeInsetsDirectional.only(end: 16),
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      margin: const EdgeInsetsDirectional.only(
+                                        end: 16,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: isDark ? Colors.white10 : const Color(0xFFF1F5F9),
+                                        color: isDark
+                                            ? Colors.white10
+                                            : const Color(0xFFF1F5F9),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Row(
@@ -465,152 +531,178 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                               ),
                             ),
                           );
-                        },
-                        childCount: daySchedule.periods.length,
+                        }, childCount: daySchedule.periods.length),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ] else ...[
-              // Grid View Table
-              SliverPadding(
-                padding: const EdgeInsets.all(20.0),
-                sliver: SliverToBoxAdapter(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: cardBgColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                    );
+                  },
+                ),
+              ] else ...[
+                // Grid View Table
+                SliverPadding(
+                  padding: const EdgeInsets.all(20.0),
+                  sliver: SliverToBoxAdapter(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: cardBgColor,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: isDark ? 0.2 : 0.05,
+                            ),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white10
+                              : Colors.grey.withValues(alpha: 0.1),
                         ),
-                      ],
-                      border: Border.all(
-                        color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1),
                       ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const ClampingScrollPhysics(),
-                        child: DataTable(
-                          columnSpacing: 24,
-                          headingRowColor: WidgetStateProperty.all(
-                            isDark ? const Color(0xFF0F172A) : const Color(0xFF062A5A).withValues(alpha: 0.05),
-                          ),
-                          dataRowColor: WidgetStateProperty.all(cardBgColor),
-                          headingTextStyle: TextStyle(
-                            fontFamily: 'GoogleSans',
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                            fontSize: 14,
-                          ),
-                          dataTextStyle: TextStyle(
-                            fontFamily: 'GoogleSans',
-                            color: textColor,
-                            fontSize: 13,
-                          ),
-                          border: TableBorder(
-                            horizontalInside: BorderSide(
-                              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1),
-                              width: 1,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const ClampingScrollPhysics(),
+                          child: DataTable(
+                            columnSpacing: 24,
+                            headingRowColor: WidgetStateProperty.all(
+                              isDark
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(
+                                      0xFF062A5A,
+                                    ).withValues(alpha: 0.05),
                             ),
-                            verticalInside: BorderSide(
-                              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1),
-                              width: 1,
+                            dataRowColor: WidgetStateProperty.all(cardBgColor),
+                            headingTextStyle: TextStyle(
+                              fontFamily: 'GoogleSans',
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor,
+                              fontSize: 14,
                             ),
-                          ),
-                          columns: [
-                            DataColumn(label: Text(context.loc.home)), // The "Day" column header
-                            ...List.generate(7, (i) => DataColumn(
-                              label: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(context.loc.period(i + 1)),
-                                  ],
-                                ),
+                            dataTextStyle: TextStyle(
+                              fontFamily: 'GoogleSans',
+                              color: textColor,
+                              fontSize: 13,
+                            ),
+                            border: TableBorder(
+                              horizontalInside: BorderSide(
+                                color: isDark
+                                    ? Colors.white10
+                                    : Colors.grey.withValues(alpha: 0.1),
+                                width: 1,
                               ),
-                            )),
-                          ],
-                          rows: _daysKeys.map((dayKey) {
-                            final daySchedule = schedule!.days.firstWhere(
-                              (d) => d.dayKey == dayKey,
-                              orElse: () => ClassScheduleDay(dayKey: dayKey, periods: []),
-                            );
-
-                            return DataRow(
-                              cells: [
-                                DataCell(
-                                  Text(
-                                    _getDayTranslation(context, dayKey),
-                                    style: const TextStyle(
-                                      fontFamily: 'GoogleSans',
-                                      fontWeight: FontWeight.bold,
+                              verticalInside: BorderSide(
+                                color: isDark
+                                    ? Colors.white10
+                                    : Colors.grey.withValues(alpha: 0.1),
+                                width: 1,
+                              ),
+                            ),
+                            columns: [
+                              DataColumn(
+                                label: Text(context.loc.home),
+                              ), // The "Day" column header
+                              ...List.generate(
+                                7,
+                                (i) => DataColumn(
+                                  label: Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(context.loc.period(i + 1)),
+                                      ],
                                     ),
                                   ),
                                 ),
-                                ...List.generate(7, (periodIdx) {
-                                  final periodNum = periodIdx + 1;
-                                  final period = daySchedule.periods.firstWhere(
-                                    (p) => p.periodNumber == periodNum,
-                                    orElse: () => const ClassPeriod(
-                                      periodNumber: 0,
-                                      subjectName: '',
-                                      startTime: '',
-                                      endTime: '',
-                                      teacherName: '',
-                                    ),
-                                  );
+                              ),
+                            ],
+                            rows: _daysKeys.map((dayKey) {
+                              final daySchedule = schedule!.days.firstWhere(
+                                (d) => d.dayKey == dayKey,
+                                orElse: () => ClassScheduleDay(
+                                  dayKey: dayKey,
+                                  periods: [],
+                                ),
+                              );
 
-                                  if (period.periodNumber == 0) {
-                                    return const DataCell(Center(child: Text('-')));
-                                  }
-
-                                  return DataCell(
-                                    Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            period.subjectName,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            '${period.startTime}-${period.endTime}',
-                                            style: TextStyle(
-                                              fontFamily: 'GoogleSans',
-                                              fontSize: 10,
-                                              color: subTextColor,
-                                            ),
-                                          ),
-                                        ],
+                              return DataRow(
+                                cells: [
+                                  DataCell(
+                                    Text(
+                                      _getDayTranslation(context, dayKey),
+                                      style: const TextStyle(
+                                        fontFamily: 'GoogleSans',
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  );
-                                }),
-                              ],
-                            );
-                          }).toList(),
+                                  ),
+                                  ...List.generate(7, (periodIdx) {
+                                    final periodNum = periodIdx + 1;
+                                    final period = daySchedule.periods
+                                        .firstWhere(
+                                          (p) => p.periodNumber == periodNum,
+                                          orElse: () => const ClassPeriod(
+                                            periodNumber: 0,
+                                            subjectName: '',
+                                            startTime: '',
+                                            endTime: '',
+                                            teacherName: '',
+                                          ),
+                                        );
+
+                                    if (period.periodNumber == 0) {
+                                      return const DataCell(
+                                        Center(child: Text('-')),
+                                      );
+                                    }
+
+                                    return DataCell(
+                                      Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              context.translateMock(
+                                                period.subjectName,
+                                              ),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '${period.startTime}-${period.endTime}',
+                                              style: TextStyle(
+                                                fontFamily: 'GoogleSans',
+                                                fontSize: 10,
+                                                color: subTextColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ]
+              ],
+            ],
           ],
-        ],
+        ),
       ),
-     ),
     );
   }
 }
