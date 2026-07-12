@@ -56,12 +56,17 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       drawer: const AppDrawer(),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-        slivers: [
-          AppSliverHeader(title: context.loc.attendanceRecord, showChildSwitcher: false),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(childrenProvider.notifier).refresh();
+          await ref.read(attendanceDataProvider.notifier).refresh();
+        },
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            AppSliverHeader(title: context.loc.attendanceRecord, showChildSwitcher: false),
 
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -243,8 +248,9 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildCustomCalendarGrid(AttendanceRecord record, bool isDark) {
     // 5 days: Sat, Sun, Mon, Tue, Wed
