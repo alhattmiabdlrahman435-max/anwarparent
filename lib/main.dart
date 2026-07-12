@@ -118,6 +118,11 @@ Future<void> _setupFirebaseMessaging() async {
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_channel);
 
+    // Request runtime notification permission on Android 13+
+    await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+
     // NOTE: FirebaseMessaging.onMessage is NOT listened here to avoid
     // duplicate listeners. It is handled exclusively in _ParentAppState
     // which has access to Riverpod ref for data refresh.
