@@ -57,7 +57,7 @@ class Notifications extends _$Notifications {
   Future<void> markAllAsRead() async {
     try {
       final dio = ref.read(apiClientProvider);
-      final response = await dio.post('notifications/read-all');
+      final response = await dio.put('notifications/read-all');
 
       if (!ref.mounted) return;
 
