@@ -360,14 +360,18 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            context.loc.totalYearlyGrades,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: gradeColor,
+                          Flexible(
+                            child: Text(
+                              context.loc.totalYearlyGrades,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: gradeColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Text(
                             '${subject.yearlyTotal.toStringAsFixed(1).replaceAll('.0', '')} / 100',
                             style: TextStyle(
@@ -408,14 +412,18 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                month.monthName,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
+              Flexible(
+                child: Text(
+                  month.monthName,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '${month.total.toStringAsFixed(0)} / 100',
                 style: TextStyle(
@@ -427,20 +435,27 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildGradeDetailItem(context.loc.homework, month.homework, 15, subTextColor),
-              _buildGradeDetailItem(
-                context.loc.attendanceBehavior,
-                month.attendance,
-                15,
-                subTextColor,
-              ),
-              _buildGradeDetailItem(context.loc.behavior, month.behavior, 10, subTextColor),
-              _buildGradeDetailItem(context.loc.oral, month.oral, 10, subTextColor),
-              _buildGradeDetailItem(context.loc.written, month.written, 50, subTextColor),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildGradeDetailItem(context.loc.homework, month.homework, 15, subTextColor),
+                const SizedBox(width: 8),
+                _buildGradeDetailItem(
+                  context.loc.attendanceBehavior,
+                  month.attendance,
+                  15,
+                  subTextColor,
+                ),
+                const SizedBox(width: 8),
+                _buildGradeDetailItem(context.loc.behavior, month.behavior, 10, subTextColor),
+                const SizedBox(width: 8),
+                _buildGradeDetailItem(context.loc.oral, month.oral, 10, subTextColor),
+                const SizedBox(width: 8),
+                _buildGradeDetailItem(context.loc.written, month.written, 50, subTextColor),
+              ],
+            ),
           ),
         ],
       ),
