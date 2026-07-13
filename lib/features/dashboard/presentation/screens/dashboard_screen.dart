@@ -34,6 +34,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final students = ref.watch(childrenProvider);
+    final isChildrenLoading = ref.watch(childrenLoadingProvider);
     final notificationsAsync = ref.watch(notificationsProvider);
     final unreadCount = notificationsAsync.maybeWhen(
       data: (list) => list.where((n) => !n.isRead).length,
@@ -77,7 +78,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 24.0),
                         child: Text(
-                          'جاري تحميل الأبناء...',
+                          isChildrenLoading
+                              ? 'جاري تحميل الأبناء...'
+                              : context.loc.noRegisteredStudents,
                           style: TextStyle(
                             color: isDark ? Colors.white70 : const Color(0xFF64748B),
                             fontSize: 14,

@@ -9,6 +9,58 @@ part of 'children_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(ChildrenLoading)
+final childrenLoadingProvider = ChildrenLoadingProvider._();
+
+final class ChildrenLoadingProvider
+    extends $NotifierProvider<ChildrenLoading, bool> {
+  ChildrenLoadingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'childrenLoadingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$childrenLoadingHash();
+
+  @$internal
+  @override
+  ChildrenLoading create() => ChildrenLoading();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$childrenLoadingHash() => r'1be73967547eaae616f98729702cbd9479c28ffd';
+
+abstract class _$ChildrenLoading extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(Children)
 final childrenProvider = ChildrenProvider._();
 
@@ -41,7 +93,7 @@ final class ChildrenProvider
   }
 }
 
-String _$childrenHash() => r'addb54b85cde98d9076b79dd89fe7e7d27191bb6';
+String _$childrenHash() => r'19352d5bc3c5abe6135953556fa7d6c763d223d6';
 
 abstract class _$Children extends $Notifier<List<Student>> {
   List<Student> build();

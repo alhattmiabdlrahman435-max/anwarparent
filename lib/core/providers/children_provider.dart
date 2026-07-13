@@ -8,6 +8,14 @@ import 'parent_provider.dart';
 part 'children_provider.g.dart';
 
 @Riverpod(keepAlive: true)
+class ChildrenLoading extends _$ChildrenLoading {
+  @override
+  bool build() => false;
+
+  void set(bool value) => state = value;
+}
+
+@Riverpod(keepAlive: true)
 class Children extends _$Children {
   @override
   List<Student> build() {
@@ -23,6 +31,9 @@ class Children extends _$Children {
       }
       return;
     }
+
+    // Set loading state to true using generated provider
+    ref.read(childrenLoadingProvider.notifier).set(true);
 
     try {
       final dio = ref.read(apiClientProvider);
@@ -49,6 +60,9 @@ class Children extends _$Children {
     } catch (e) {
       // Keep empty or log error
       debugPrint('Error loading children: $e');
+    } finally {
+      // Set loading state to false
+      ref.read(childrenLoadingProvider.notifier).set(false);
     }
   }
 
