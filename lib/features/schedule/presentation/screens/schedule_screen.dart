@@ -470,65 +470,57 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                                 color: textColor,
                                               ),
                                             ),
-                                            const SizedBox(height: 4),
-                                            Row(
+                                            const SizedBox(height: 6),
+                                            // Responsive wrap to prevent horizontal overflow
+                                            Wrap(
+                                              spacing: 12,
+                                              runSpacing: 6,
+                                              crossAxisAlignment: WrapCrossAlignment.center,
                                               children: [
-                                                Icon(
-                                                  CupertinoIcons.person,
-                                                  size: 14,
-                                                  color: subTextColor,
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      CupertinoIcons.person,
+                                                      size: 14,
+                                                      color: subTextColor,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      context.translateMock(
+                                                        period.teacherName,
+                                                      ),
+                                                      style: TextStyle(
+                                                        fontFamily: 'GoogleSans',
+                                                        fontSize: 12,
+                                                        color: subTextColor,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  context.translateMock(
-                                                    period.teacherName,
-                                                  ),
-                                                  style: TextStyle(
-                                                    fontFamily: 'GoogleSans',
-                                                    fontSize: 12,
-                                                    color: subTextColor,
-                                                  ),
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      CupertinoIcons.clock,
+                                                      size: 14,
+                                                      color: subTextColor,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      '${period.startTime} - ${period.endTime}',
+                                                      style: TextStyle(
+                                                        fontFamily: 'GoogleSans',
+                                                        fontSize: 12,
+                                                        color: subTextColor,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
                                           ],
                                         ),
-                                      ),
-                                    ),
-                                    // Timing badge
-                                    Container(
-                                      margin: const EdgeInsetsDirectional.only(
-                                        end: 16,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: isDark
-                                            ? Colors.white10
-                                            : const Color(0xFFF1F5F9),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            CupertinoIcons.clock,
-                                            size: 12,
-                                            color: subTextColor,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '${period.startTime} - ${period.endTime}',
-                                            style: TextStyle(
-                                              fontFamily: 'GoogleSans',
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              color: subTextColor,
-                                            ),
-                                          ),
-                                        ],
                                       ),
                                     ),
                                   ],

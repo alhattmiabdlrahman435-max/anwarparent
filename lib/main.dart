@@ -25,7 +25,7 @@ import 'core/network/pusher_service.dart';
 final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 const AndroidNotificationChannel _channel = AndroidNotificationChannel(
-  'high_importance_channel',
+  'high_importance_channel_v2',
   'إشعارات هامة',
   description: 'هذه القناة مخصصة لإشعارات الحضور والغياب الهامة.',
   importance: Importance.max,
