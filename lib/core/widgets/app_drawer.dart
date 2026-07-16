@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/localization_extension.dart';
 import '../../../../core/providers/parent_provider.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../utils/constants.dart';
 
 class AppDrawer extends ConsumerWidget {
@@ -57,7 +58,13 @@ class AppDrawer extends ConsumerWidget {
                 children: [
                   InkWell(
                     onTap: () {
-                      // Profile tap
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ProfileScreen(),
+                        ),
+                      );
                     },
                     child: Stack(
                       alignment: Alignment.bottomRight,

@@ -55,22 +55,52 @@ void _navigateByNotificationType(String type) {
     'report': '/alerts',
     'alert': '/alerts',
     'notifications': '/alerts',
+    'finance': '/fees',
   };
   final route = typeToRoute[type] ?? '/attendance';
-  final context = rootNavigatorKey.currentContext;
-  if (context != null) {
-    GoRouter.of(context).go(route);
+  
+  void tryNavigate(int retries) {
+    final context = rootNavigatorKey.currentContext;
+    if (context != null) {
+      GoRouter.of(context).go(route);
+    } else if (retries < 10) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        tryNavigate(retries + 1);
+      });
+    } else {
+      debugPrint("Failed to navigate to $route: context is null after retries.");
+    }
   }
+
+  tryNavigate(0);
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Request permission for push notifications immediately (blocking but very fast)
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    // Set foreground notification presentation options while app is open
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+  } catch (e) {
+    debugPrint('Firebase initialization/permission failed: $e');
+  }
 
   // Request permissions and print FCM Token asynchronously (non-blocking)
   _setupFirebaseMessaging();
@@ -84,19 +114,6 @@ void main() async {
 
 Future<void> _setupFirebaseMessaging() async {
   try {
-    await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    // Set foreground notification options to show banner/sound while app is open
-    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
     // Initialize local notifications to show heads-up banner on foreground
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -130,37 +147,31 @@ Future<void> _setupFirebaseMessaging() async {
     // NOTE: onMessageOpenedApp is handled in _ParentAppState._listenToFcmForDataRefresh
     // to avoid duplicate listeners that cause double navigation.
 
-    // Handle terminated state notification clicks
-    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-    if (initialMessage != null) {
-      debugPrint('FCM Notification clicked from terminated state.');
-      Future.delayed(const Duration(milliseconds: 1500), () {
-        final type = initialMessage.data['type'] ?? 'attendance';
-        _navigateByNotificationType(type);
-      });
-    }
+    // Removed initialMessage handling here. Moved to _ParentAppState.initState() to ensure context is ready.
 
     // On iOS, we must ensure APNS token is received before getting FCM token
     String? apnsToken;
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       apnsToken = await FirebaseMessaging.instance.getAPNSToken();
       
-      // On iOS simulators or debug configurations, the APNS token is always null.
-      // We skip the 10-second retry loop in debug mode to make startup clean and fast.
       if (apnsToken == null && !kReleaseMode) {
         debugPrint('iOS Simulator/Debug detected: APNS token is null (Push Notifications are only supported on physical iOS devices).');
       } else {
         int retries = 0;
-        while (apnsToken == null && retries < 5) {
+        while (apnsToken == null && retries < 15) {
           await Future.delayed(const Duration(seconds: 1));
           apnsToken = await FirebaseMessaging.instance.getAPNSToken();
           retries++;
         }
       }
+
+      if (apnsToken == null && kReleaseMode) {
+        debugPrint('APNS token is null. Note: Push Notifications are only supported on physical iOS devices.');
+      }
     }
 
     // Only attempt to get FCM token if we are not on iOS, or if we are on iOS and APNS token is available
-    if (defaultTargetPlatform == TargetPlatform.iOS && apnsToken == null) {
+    if (defaultTargetPlatform == TargetPlatform.iOS && apnsToken == null && kReleaseMode) {
       debugPrint('Skipped FCM token registration: APNS token is not available.');
     } else {
       String? token = await FirebaseMessaging.instance.getToken();
@@ -191,6 +202,18 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
     _listenToFcmForDataRefresh();
     // Fetch initial data immediately on launch
     Future.microtask(() => _refreshAllData());
+
+    // Check if app was launched from a terminated state via a notification click
+    FirebaseMessaging.instance.getInitialMessage().then((initialMessage) {
+      if (initialMessage != null) {
+        debugPrint('FCM Notification clicked from terminated state.');
+        // Wait a short moment for the router to be fully ready
+        Future.delayed(const Duration(milliseconds: 500), () {
+          final type = initialMessage.data['type'] ?? 'attendance';
+          _navigateByNotificationType(type);
+        });
+      }
+    });
   }
 
   @override
@@ -226,6 +249,9 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
 
   /// Centralized data refresh handler for notification types.
   void _refreshProviderByType(String type) {
+    // Always invalidate the notifications list so the UI updates in real-time
+    ref.invalidate(notificationsProvider);
+
     switch (type) {
       case 'attendance':
       case 'absence':
@@ -248,11 +274,10 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
       case 'schedule':
         ref.invalidate(classSchedulesProvider);
         break;
-      case 'report':
-      case 'alert':
-      case 'notifications':
+      case 'finance':
+        ref.invalidate(financeProvider);
+        break;
       default:
-        ref.invalidate(notificationsProvider);
         break;
     }
   }
@@ -267,7 +292,7 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
       // Refresh the relevant data provider
       _refreshProviderByType(type);
 
-      // Show local notification banner (foreground only)
+      // Show local notification banner (foreground only on Android)
       final notification = message.notification;
       if (notification != null && !kIsWeb) {
         _flutterLocalNotificationsPlugin.show(
@@ -296,10 +321,14 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
       }
     });
 
-    // Also refresh on tap from background state
+    // Also refresh and navigate on tap from background state
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       final type = message.data['type'] ?? '';
       _refreshProviderByType(type);
+      // Ensure we navigate to the correct screen
+      Future.microtask(() {
+        _navigateByNotificationType(type.isEmpty ? 'attendance' : type);
+      });
     });
   }
 

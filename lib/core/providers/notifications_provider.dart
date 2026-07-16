@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/app_notification.dart';
 import '../network/api_client.dart';
+import '../services/badge_service.dart';
 
 part 'notifications_provider.g.dart';
 
@@ -24,7 +25,12 @@ class Notifications extends _$Notifications {
 
       if (response.data != null && response.data['success'] == true) {
         final List<dynamic> list = response.data['notifications'] ?? [];
-        return list.map((json) => AppNotification.fromJson(json)).toList();
+        final parsed = list.map((json) => AppNotification.fromJson(json)).toList();
+
+        final unreadCount = parsed.where((n) => !n.isRead).length;
+        BadgeService.setBadge(unreadCount);
+
+        return parsed;
       }
     } catch (e) {
       debugPrint('Error loading notifications: $e');
@@ -41,13 +47,17 @@ class Notifications extends _$Notifications {
 
       if (response.data != null && response.data['success'] == true) {
         final currentList = state.value ?? [];
-        state = AsyncValue.data([
+        final updatedList = [
           for (final notif in currentList)
             if (notif.id == id)
               notif.copyWith(isRead: true)
             else
               notif
-        ]);
+        ];
+        state = AsyncValue.data(updatedList);
+
+        final unreadCount = updatedList.where((n) => !n.isRead).length;
+        BadgeService.setBadge(unreadCount);
       }
     } catch (e) {
       debugPrint('Error marking notification as read: $e');
@@ -63,10 +73,13 @@ class Notifications extends _$Notifications {
 
       if (response.data != null && response.data['success'] == true) {
         final currentList = state.value ?? [];
-        state = AsyncValue.data([
+        final updatedList = [
           for (final notif in currentList)
             notif.copyWith(isRead: true)
-        ]);
+        ];
+        state = AsyncValue.data(updatedList);
+
+        BadgeService.clearBadge();
       }
     } catch (e) {
       debugPrint('Error marking all notifications as read: $e');
@@ -82,7 +95,10 @@ class Notifications extends _$Notifications {
       }
     } else {
       state = const AsyncValue.loading();
-      state = await AsyncValue.guard(() => _loadNotifications());
+      final result = await AsyncValue.guard(() => _loadNotifications());
+      if (ref.mounted) {
+        state = result;
+      }
     }
   }
 }

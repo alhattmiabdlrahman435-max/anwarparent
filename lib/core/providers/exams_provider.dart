@@ -19,7 +19,7 @@ class Exams extends _$Exams {
       final response = await dio.get('exam-schedules');
       if (response.data != null && response.data['success'] == true) {
         final List<dynamic> list = response.data['exam_schedules'] ?? [];
-        state = list.map((item) {
+        final parsed = list.map((item) {
           final String title = item['title'] ?? '';
           
           // تحديد الفصل الدراسي بشكل مرن ودقيق
@@ -62,12 +62,13 @@ class Exams extends _$Exams {
             subjects: subjects,
           );
         }).toList();
+        if (ref.mounted) state = parsed;
       } else {
-        state = [];
+        if (ref.mounted) state = [];
       }
     } catch (e) {
       debugPrint('Error fetching exam schedules: $e');
-      state = [];
+      if (ref.mounted) state = [];
     }
   }
 

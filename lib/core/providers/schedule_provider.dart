@@ -24,8 +24,11 @@ class ClassSchedules extends _$ClassSchedules {
       final response = await dio.get('schedules');
 
       if (response.data != null && response.data['success'] == true) {
-        final Map<String, dynamic> apiSchedules = response.data['schedules'] ?? {};
-        final Map<String, dynamic> apiTeachers = response.data['teachers'] ?? {};
+        final rawSchedules = response.data['schedules'];
+        final Map<String, dynamic> apiSchedules = rawSchedules is Map ? Map<String, dynamic>.from(rawSchedules) : {};
+        
+        final rawTeachers = response.data['teachers'];
+        final Map<String, dynamic> apiTeachers = rawTeachers is Map ? Map<String, dynamic>.from(rawTeachers) : {};
         final List<ClassSchedule> parsedSchedules = [];
 
         // أوقات الحصص الافتراضية

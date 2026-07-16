@@ -72,49 +72,58 @@ class AppSliverHeader extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (showChildSwitcher && children.length > 1)
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () =>
-                  _showChildSelector(context, ref, children, currentChild),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : const Color(0xFF062A5A).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      currentChild != null
-                          ? currentChild.name.split(' ').first
-                          : context.loc.selectChild,
-                      style: TextStyle(
-                        color: isDark ? Colors.white : const Color(0xFF062A5A),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        fontFamily: 'GoogleSans',
+            Flexible(
+              child: CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () =>
+                    _showChildSelector(context, ref, children, currentChild),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : const Color(0xFF062A5A).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 100),
+                        child: Text(
+                          currentChild != null
+                              ? currentChild.name.split(' ').first
+                              : context.loc.selectChild,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : const Color(0xFF062A5A),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            fontFamily: 'GoogleSans',
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      CupertinoIcons.chevron_down,
-                      size: 14,
-                      color: isDark ? Colors.white : const Color(0xFF062A5A),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Icon(
+                        CupertinoIcons.chevron_down,
+                        size: 14,
+                        color: isDark ? Colors.white : const Color(0xFF062A5A),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           if (trailing != null) ...[
             if (showChildSwitcher && children.length > 1)
               const SizedBox(width: 8),
-            trailing!,
+            Flexible(
+              child: trailing!,
+            ),
           ],
         ],
       ),
@@ -159,7 +168,7 @@ class AppSliverHeader extends ConsumerWidget {
                 Text(
                   context.loc.selectChild,
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: textColor,
                     fontFamily: 'GoogleSans',
@@ -168,40 +177,84 @@ class AppSliverHeader extends ConsumerWidget {
                 const SizedBox(height: 16),
                 ...children.map((child) {
                   final isSelected = child.id == currentChild?.id;
-                  return ListTile(
-                    leading: StudentAvatar(
-                      photoUrl: child.photoUrl,
-                      name: child.name,
-                      size: 36,
-                      isSelected: isSelected,
-                    ),
-                    title: Text(
-                      child.name,
-                      style: TextStyle(
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        color: textColor,
-                        fontFamily: 'GoogleSans',
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                    child: InkWell(
+                      onTap: () {
+                        ref.read(currentChildProvider.notifier).setChild(child);
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? (isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFF062A5A).withValues(alpha: 0.05))
+                              : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected
+                                ? (isDark ? Colors.white.withValues(alpha: 0.3) : const Color(0xFF062A5A).withValues(alpha: 0.2))
+                                : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.1)),
+                            width: isSelected ? 1.5 : 1,
+                          ),
+                          boxShadow: isDark
+                              ? null
+                              : [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.02),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                        ),
+                        child: Row(
+                          children: [
+                            StudentAvatar(
+                              photoUrl: child.photoUrl,
+                              name: child.name,
+                              size: 48,
+                              isSelected: isSelected,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    child.name,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                      color: textColor,
+                                      fontFamily: 'GoogleSans',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    child.grade,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: isDark ? Colors.white60 : Colors.grey.shade600,
+                                      fontFamily: 'GoogleSans',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            if (isSelected)
+                              Icon(
+                                CupertinoIcons.check_mark_circled_solid,
+                                color: isDark ? Colors.white : const Color(0xFF062A5A),
+                                size: 24,
+                              )
+                            else
+                              const SizedBox(width: 24),
+                          ],
+                        ),
                       ),
                     ),
-                    subtitle: Text(
-                      child.grade,
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontFamily: 'GoogleSans',
-                      ),
-                    ),
-                    trailing: isSelected
-                        ? Icon(
-                            CupertinoIcons.check_mark_circled_solid,
-                            color: isDark ? Colors.white : const Color(0xFF062A5A),
-                          )
-                        : null,
-                    onTap: () {
-                      ref.read(currentChildProvider.notifier).setChild(child);
-                      Navigator.pop(context);
-                    },
                   );
                 }),
                 const SizedBox(height: 24),

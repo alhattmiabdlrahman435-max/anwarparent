@@ -22,6 +22,11 @@ class Auth extends _$Auth {
 
   @override
   FutureOr<bool> build() async {
+    // Listen to token refresh to sync it dynamically
+    FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) {
+      _syncToken(fcmToken);
+    });
+
     try {
       final token = await _storage.read(key: _tokenKey);
       final isLoggedIn = token != null && token.isNotEmpty;
@@ -39,10 +44,56 @@ class Auth extends _$Auth {
     }
   }
 
+  Future<void> _syncToken(String fcmToken) async {
+    try {
+      final isLoggedIn = state.value ?? false;
+      if (!isLoggedIn) return;
+
+      final dio = ref.read(apiClientProvider);
+      await dio.post('user/fcm-token', data: {
+        'fcm_token': fcmToken,
+      });
+      if (kDebugMode) {
+        debugPrint('FCM Token synced to backend successfully via refresh.');
+      }
+    } catch (e) {
+      debugPrint('Error syncing FCM Token to backend on refresh: $e');
+    }
+  }
+
   Future<void> syncFcmToken() async {
     try {
       final dio = ref.read(apiClientProvider);
-      final fcmToken = await FirebaseMessaging.instance.getToken();
+
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        
+        if (apnsToken == null && !kReleaseMode) {
+          debugPrint('iOS Simulator/Debug detected: APNS token is null (Push Notifications are only supported on physical iOS devices).');
+        } else {
+          int retries = 0;
+          // Wait up to 15 seconds for APNS token
+          while (apnsToken == null && retries < 15) {
+            await Future.delayed(const Duration(seconds: 1));
+            apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+            retries++;
+          }
+        }
+        
+        if (apnsToken == null && kReleaseMode) {
+          debugPrint('FCM Token Sync: APNS token is null. Skipping FCM registration.');
+          return;
+        }
+      }
+
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
+      int fcmRetries = 0;
+      while (fcmToken == null && fcmRetries < 5) {
+        await Future.delayed(const Duration(seconds: 1));
+        fcmToken = await FirebaseMessaging.instance.getToken();
+        fcmRetries++;
+      }
+
       if (fcmToken != null) {
         await dio.post('user/fcm-token', data: {
           'fcm_token': fcmToken,
@@ -50,6 +101,8 @@ class Auth extends _$Auth {
         if (kDebugMode) {
           debugPrint('FCM Token synced to backend successfully.');
         }
+      } else {
+        debugPrint('FCM Token Sync: FCM token is null after retries.');
       }
     } catch (e) {
       debugPrint('Error syncing FCM Token to backend: $e');
@@ -115,6 +168,13 @@ class Auth extends _$Auth {
     } catch (e) {
       debugPrint('Error invalidating token on server: $e');
     } finally {
+      // Clear FCM registration token on the device
+      try {
+        await FirebaseMessaging.instance.deleteToken();
+      } catch (e) {
+        debugPrint('Error deleting FCM token on logout: $e');
+      }
+
       // Always delete local token and set auth state to false (logged out)
       await _storage.delete(key: _tokenKey);
       await ref.read(currentParentProvider.notifier).clearProfile();

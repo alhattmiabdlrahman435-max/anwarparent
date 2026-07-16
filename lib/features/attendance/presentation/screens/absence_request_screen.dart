@@ -21,9 +21,30 @@ class AbsenceRequestScreen extends ConsumerStatefulWidget {
 
 class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
   String? selectedStudentId;
-  DateTime? selectedDate = DateTime.now();
+  DateTime? selectedDate;
   final TextEditingController _reasonController = TextEditingController();
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedDate = _safeInitialDate();
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(absenceRequestsProvider.notifier).refresh();
+      }
+    });
+  }
+
+  DateTime _safeInitialDate() {
+    final now = DateTime.now();
+    if (now.weekday == DateTime.thursday) {
+      return now.add(const Duration(days: 2));
+    } else if (now.weekday == DateTime.friday) {
+      return now.add(const Duration(days: 1));
+    }
+    return now;
+  }
 
   @override
   void dispose() {
@@ -49,6 +70,7 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
       final selectedDateOnly = selectedDate ?? DateTime.now();
       final hasDuplicate = existingRequests.any((req) {
         return req.studentId == selectedStudentId &&
+            req.status != AbsenceRequestStatus.rejected &&
             req.date.year == selectedDateOnly.year &&
             req.date.month == selectedDateOnly.month &&
             req.date.day == selectedDateOnly.day;
@@ -83,7 +105,13 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
       if (errorMessage == null) {
         _showSuccessSnackBar(context.loc.absenceRequestSentSuccessfully);
         await Future.delayed(const Duration(milliseconds: 1000));
-        if (mounted) context.pop();
+        if (mounted) {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/absence_history');
+          }
+        }
       } else {
         _showErrorSnackBar(errorMessage);
       }
@@ -308,9 +336,13 @@ class _AbsenceRequestScreenState extends ConsumerState<AbsenceRequestScreen> {
       onTap: () async {
         final picked = await showDatePicker(
           context: context,
-          initialDate: selectedDate ?? DateTime.now(),
+          initialDate: selectedDate ?? _safeInitialDate(),
           firstDate: DateTime(2023),
           lastDate: DateTime(2030),
+          selectableDayPredicate: (DateTime date) {
+            return date.weekday != DateTime.thursday &&
+                date.weekday != DateTime.friday;
+          },
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(

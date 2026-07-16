@@ -58,7 +58,7 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
               title: context.loc.alerts,
               showChildSwitcher: true,
               trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: alertColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
@@ -71,17 +71,21 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
                   children: [
                     const Icon(
                       CupertinoIcons.exclamationmark_shield_fill,
-                      size: 14,
+                      size: 13,
                       color: alertColor,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      context.loc.highPriority,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: alertColor,
-                        fontFamily: 'GoogleSans',
+                    Flexible(
+                      child: Text(
+                        context.loc.highPriority,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: alertColor,
+                          fontFamily: 'GoogleSans',
+                        ),
                       ),
                     ),
                   ],

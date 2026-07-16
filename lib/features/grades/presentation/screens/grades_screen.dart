@@ -342,6 +342,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                         ),
                         Text(
                           '${termData.total.toStringAsFixed(1).replaceAll('.0', '')} / 50',
+                          textDirection: TextDirection.ltr,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
@@ -384,6 +385,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                           const SizedBox(width: 8),
                           Text(
                             '${subject.yearlyTotal.toStringAsFixed(1).replaceAll('.0', '')} / 100',
+                            textDirection: TextDirection.ltr,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
@@ -436,6 +438,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
               const SizedBox(width: 8),
               Text(
                 '${month.total.toStringAsFixed(0)} / 100',
+                textDirection: TextDirection.ltr,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
@@ -491,6 +494,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
         const SizedBox(height: 4),
         Text(
           '${grade.toStringAsFixed(0)}/$maxGrade',
+          textDirection: TextDirection.ltr,
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.bold,
@@ -523,6 +527,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
         ),
         Text(
           '$grade / $maxGrade',
+          textDirection: TextDirection.ltr,
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,

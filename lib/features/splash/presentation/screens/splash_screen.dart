@@ -72,10 +72,10 @@ class _SplashScreenState extends State<SplashScreen>
             );
           },
           child: Container(
-            width: 100,
-            height: 100,
+            width: 110,
+            height: 110,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
@@ -87,10 +87,13 @@ class _SplashScreenState extends State<SplashScreen>
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.asset(
-                'assets/icons/app_icon.jpeg',
-                fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(24),
+              child: Padding(
+                padding: const EdgeInsets.all(14.0),
+                child: Image.asset(
+                  'assets/icons/app_icon.jpeg',
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),

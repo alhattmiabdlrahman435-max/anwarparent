@@ -163,9 +163,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _uploadAvatar(String path) async {
+    final dio = ref.read(apiClientProvider);
+    final parent = ref.read(currentParentProvider);
+    final parentNotifier = ref.read(currentParentProvider.notifier);
+
     try {
-      final dio = ref.read(apiClientProvider);
-      
       final formData = FormData.fromMap({
         'photo': await MultipartFile.fromFile(
           path,
@@ -180,9 +182,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
       if (response.data != null && response.data['success'] == true) {
         final newUrl = response.data['photo_url'];
-        final parent = ref.read(currentParentProvider);
         
-        await ref.read(currentParentProvider.notifier).setProfile(
+        await parentNotifier.setProfile(
           id: parent.id,
           name: parent.name,
           phoneNumber: parent.phoneNumber,
@@ -227,6 +228,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
       
       if (image != null) {
+        if (!mounted) return;
         setState(() {
           _pickedImagePath = image.path;
         });
@@ -253,12 +255,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final parent = ref.read(currentParentProvider);
     if (parent.id.isEmpty) return;
 
+    final dio = ref.read(apiClientProvider);
+    final parentNotifier = ref.read(currentParentProvider.notifier);
+
     setState(() {
       _isEditing = false;
     });
 
     try {
-      final dio = ref.read(apiClientProvider);
       final response = await dio.put('parents/${parent.id}', data: {
         'name_ar': _nameController.text,
         'phone': _phoneController.text,
@@ -267,7 +271,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (response.data != null && response.data['success'] == true) {
         final updatedParent = response.data['parent'];
         
-        await ref.read(currentParentProvider.notifier).setProfile(
+        await parentNotifier.setProfile(
           id: parent.id,
           name: updatedParent['name_ar'] ?? _nameController.text,
           phoneNumber: updatedParent['phone'] ?? _phoneController.text,

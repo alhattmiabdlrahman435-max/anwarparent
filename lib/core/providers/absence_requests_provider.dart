@@ -51,6 +51,8 @@ class AbsenceRequests extends _$AbsenceRequests {
         data: request.toJson(parentId),
       );
 
+      if (!ref.mounted) return null;
+
       if (response.data != null && response.data['success'] == true) {
         // Reload state to show the new request from database
         state = const AsyncValue.loading();
@@ -78,7 +80,10 @@ class AbsenceRequests extends _$AbsenceRequests {
       }
     } else {
       state = const AsyncValue.loading();
-      state = await AsyncValue.guard(() => _loadRequests());
+      final result = await AsyncValue.guard(() => _loadRequests());
+      if (ref.mounted) {
+        state = result;
+      }
     }
   }
 }

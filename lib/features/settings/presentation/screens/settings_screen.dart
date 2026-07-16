@@ -13,6 +13,7 @@ import '../../../../core/extensions/localization_extension.dart';
 import 'about_app_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'contact_us_screen.dart';
+import 'help_center_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -172,7 +173,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           PhosphorIconsStyle.duotone,
                         ),
                         title: context.loc.helpCenter,
-                        onTap: () {},
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const HelpCenterScreen(),
+                          ),
+                        ),
                       ),
                       _Divider(),
                       _SettingsTile(

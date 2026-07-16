@@ -19,7 +19,10 @@ class ChildrenLoading extends _$ChildrenLoading {
 class Children extends _$Children {
   @override
   List<Student> build() {
-    _loadFromBackend();
+    final parent = ref.watch(currentParentProvider);
+    if (parent.id.isNotEmpty) {
+      _loadFromBackend();
+    }
     return [];
   }
 
@@ -33,7 +36,12 @@ class Children extends _$Children {
     }
 
     // Set loading state to true using generated provider
-    ref.read(childrenLoadingProvider.notifier).set(true);
+    // Defer to avoid Riverpod assertion: "Providers are not allowed to modify other providers during their initialization"
+    Future.microtask(() {
+      if (ref.mounted) {
+        ref.read(childrenLoadingProvider.notifier).set(true);
+      }
+    });
 
     try {
       final dio = ref.read(apiClientProvider);
@@ -42,7 +50,7 @@ class Children extends _$Children {
       if (response.data != null && response.data['success'] == true) {
         final List<dynamic> list = response.data['students'] ?? [];
         final mapped = list.map((item) {
-          final schoolClass = item['school_class'];
+          final schoolClass = item['school_class'] ?? item['schoolClass'];
           final gradeName = schoolClass != null ? (schoolClass['name_ar'] ?? '') : '';
           return Student(
             id: item['id'].toString(),
@@ -62,7 +70,9 @@ class Children extends _$Children {
       debugPrint('Error loading children: $e');
     } finally {
       // Set loading state to false
-      ref.read(childrenLoadingProvider.notifier).set(false);
+      if (ref.mounted) {
+        ref.read(childrenLoadingProvider.notifier).set(false);
+      }
     }
   }
 
