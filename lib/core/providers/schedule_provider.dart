@@ -60,11 +60,11 @@ class ClassSchedules extends _$ClassSchedules {
                       ? defaultTimings[i] 
                       : {'start': '00:00', 'end': '00:00'};
 
-                  // الحصول على اسم المعلم للمادة في هذا الفصل
+                  // الحصول على اسم المعلم للمادة في هذا الفصل بشكل آمن
                   String teacherName = 'معلم المادة';
                   if (apiTeachers.containsKey(classGrade)) {
-                    final classTeachers = apiTeachers[classGrade] as Map<String, dynamic>;
-                    if (classTeachers.containsKey(subject)) {
+                    final classTeachers = apiTeachers[classGrade];
+                    if (classTeachers is Map && classTeachers.containsKey(subject)) {
                       teacherName = classTeachers[subject]?.toString() ?? 'معلم المادة';
                     }
                   }
