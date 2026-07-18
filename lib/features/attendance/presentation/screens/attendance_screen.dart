@@ -42,12 +42,13 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
     final kids = ref.watch(childrenProvider);
     final currentChild = ref.watch(currentChildProvider);
-    final attendanceRecords = ref.watch(attendanceDataProvider);
+    final attendanceAsync = ref.watch(attendanceDataProvider);
 
     AttendanceRecord? record;
-    if (currentChild != null && attendanceRecords.isNotEmpty) {
+    final hasData = attendanceAsync.value != null && attendanceAsync.value!.isNotEmpty;
+    if (currentChild != null && hasData) {
       try {
-        record = attendanceRecords.firstWhere((r) => r.studentId == currentChild.id);
+        record = attendanceAsync.value!.firstWhere((r) => r.studentId == currentChild.id);
       } catch (_) {
         record = null;
       }
@@ -99,10 +100,15 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
                 const SizedBox(height: 24),
 
-                if (kids.isNotEmpty && attendanceRecords.isEmpty)
+                if (attendanceAsync.isLoading)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 40.0),
                     child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (attendanceAsync.hasError)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40.0),
+                    child: Center(child: Text('حدث خطأ أثناء تحميل البيانات', style: TextStyle(fontFamily: 'GoogleSans'))),
                   )
                 else if (record != null) ...[
                   // Summary Cards

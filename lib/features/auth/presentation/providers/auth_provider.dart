@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_routes.dart';
 import '../../../../core/providers/parent_provider.dart';
 import '../../../../core/providers/children_provider.dart';
 import '../../../../core/providers/attendance_provider.dart';
@@ -21,6 +22,7 @@ part 'auth_provider.g.dart';
 class Auth extends _$Auth {
   final _storage = const FlutterSecureStorage();
   static const _tokenKey = 'auth_token';
+  String? _cachedToken;
 
   @override
   FutureOr<bool> build() async {
@@ -31,18 +33,16 @@ class Auth extends _$Auth {
 
     try {
       final token = await _storage.read(key: _tokenKey);
+      _cachedToken = token;
       final isLoggedIn = token != null && token.isNotEmpty;
       if (isLoggedIn) {
         Future.microtask(() => syncFcmToken());
       }
       return isLoggedIn;
     } catch (e) {
-      // In case of Keystore corruption or platform-specific secure storage read failure,
-      // clear the storage and return false (logged out).
-      try {
-        await _storage.deleteAll();
-      } catch (_) {}
-      return false;
+      debugPrint('Error reading auth_token from secure storage: $e');
+      // Do NOT call _storage.deleteAll() on temporary read errors to avoid wiping session!
+      return _cachedToken != null && _cachedToken!.isNotEmpty;
     }
   }
 
@@ -52,7 +52,7 @@ class Auth extends _$Auth {
       if (!isLoggedIn) return;
 
       final dio = ref.read(apiClientProvider);
-      await dio.post('user/fcm-token', data: {
+      await dio.post(ApiRoutes.updateFcmToken, data: {
         'fcm_token': fcmToken,
       });
       if (kDebugMode) {
@@ -97,7 +97,7 @@ class Auth extends _$Auth {
       }
 
       if (fcmToken != null) {
-        await dio.post('user/fcm-token', data: {
+        await dio.post(ApiRoutes.updateFcmToken, data: {
           'fcm_token': fcmToken,
         });
         if (kDebugMode) {
@@ -115,7 +115,7 @@ class Auth extends _$Auth {
     state = const AsyncValue.loading();
     try {
       final dio = ref.read(apiClientProvider);
-      final response = await dio.post('login', data: {
+      final response = await dio.post(ApiRoutes.login, data: {
         'username': username,
         'password': password,
       });
@@ -128,6 +128,7 @@ class Auth extends _$Auth {
         }
 
         final token = data['token'];
+        _cachedToken = token;
         await _storage.write(key: _tokenKey, value: token);
 
         final userData = data['user'];
@@ -171,7 +172,7 @@ class Auth extends _$Auth {
         logoutData['fcm_token'] = fcmToken;
       }
       // Invalidate Sanctum token and detach FCM token on the backend
-      await dio.post('logout', data: logoutData);
+      await dio.post(ApiRoutes.logout, data: logoutData);
     } catch (e) {
       debugPrint('Error invalidating token on server: $e');
     } finally {
@@ -190,6 +191,7 @@ class Auth extends _$Auth {
       }
 
       // Always delete local token and set auth state to false (logged out)
+      _cachedToken = null;
       await _storage.delete(key: _tokenKey);
       await ref.read(currentParentProvider.notifier).clearProfile();
 
@@ -207,11 +209,9 @@ class Auth extends _$Auth {
     }
   }
 
-  Future<String?> getToken() async {
-    try {
-      return await _storage.read(key: _tokenKey);
-    } catch (_) {
-      return null;
-    }
+  String? get cachedToken => _cachedToken;
+
+  void setCachedToken(String token) {
+    _cachedToken = token;
   }
 }

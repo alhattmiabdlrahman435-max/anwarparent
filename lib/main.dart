@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'core/routing/app_router.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/settings_provider.dart';
 import 'core/providers/notifications_provider.dart';
@@ -231,6 +232,12 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
 
   void _refreshAllData() {
     try {
+      final isLoggedIn = ref.read(authProvider).value ?? false;
+      if (!isLoggedIn) {
+        debugPrint('[ParentApp] Skipping background refresh: User is not logged in.');
+        return;
+      }
+
       debugPrint('[ParentApp] Refreshing all data in background...');
       ref.read(childrenProvider.notifier).refresh();
       ref.read(notificationsProvider.notifier).refresh();

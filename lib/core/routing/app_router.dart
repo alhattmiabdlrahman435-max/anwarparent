@@ -44,6 +44,12 @@ GoRouter appRouter(Ref ref) {
     refreshListenable: notifier,
     redirect: (context, state) {
       final authState = ref.read(authProvider);
+
+      // Do not perform redirect while auth state is loading/initializing
+      if (authState.isLoading) {
+        return null;
+      }
+
       final isLoggedIn = authState.value ?? false;
       final location = state.uri.toString();
 

@@ -91,19 +91,21 @@ class AppSliverHeader extends ConsumerWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 100),
-                        child: Text(
-                          currentChild != null
-                              ? currentChild.name.split(' ').first
-                              : context.loc.selectChild,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: isDark ? Colors.white : const Color(0xFF062A5A),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            fontFamily: 'GoogleSans',
+                      Flexible(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 100),
+                          child: Text(
+                            currentChild != null
+                                ? currentChild.name.split(' ').first
+                                : context.loc.selectChild,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: isDark ? Colors.white : const Color(0xFF062A5A),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              fontFamily: 'GoogleSans',
+                            ),
                           ),
                         ),
                       ),

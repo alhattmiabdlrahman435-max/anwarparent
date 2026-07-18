@@ -40,7 +40,7 @@ final class ExamsProvider extends $NotifierProvider<Exams, List<ExamSchedule>> {
   }
 }
 
-String _$examsHash() => r'66a54c29e456a0bcab912099e4c8c3e6222a6c1e';
+String _$examsHash() => r'b67cc51e473bc4f6a4a256d273d22be61cd53a9e';
 
 abstract class _$Exams extends $Notifier<List<ExamSchedule>> {
   List<ExamSchedule> build();

@@ -4,15 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:dio/dio.dart';
+
 import '../../../../core/utils/constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/providers/children_provider.dart';
 import '../../../../core/providers/parent_provider.dart';
 import '../../../../core/models/parent_profile.dart';
-import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/extensions/localization_extension.dart';
+import '../providers/profile_controller.dart';
+
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -163,57 +164,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _uploadAvatar(String path) async {
-    final dio = ref.read(apiClientProvider);
-    final parent = ref.read(currentParentProvider);
-    final parentNotifier = ref.read(currentParentProvider.notifier);
-
-    try {
-      final formData = FormData.fromMap({
-        'photo': await MultipartFile.fromFile(
-          path,
-          filename: path.split('/').last,
+    final success = await ref.read(profileControllerProvider.notifier).uploadAvatar(path);
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('تم تحديث صورة الملف الشخصي بنجاح'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
-      });
-
-      final response = await dio.post(
-        'user/update-photo',
-        data: formData,
       );
-
-      if (response.data != null && response.data['success'] == true) {
-        final newUrl = response.data['photo_url'];
-        
-        await parentNotifier.setProfile(
-          id: parent.id,
-          name: parent.name,
-          phoneNumber: parent.phoneNumber,
-          nationalId: parent.nationalId,
-          avatarUrl: newUrl,
-        );
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('تم تحديث صورة الملف الشخصي بنجاح'),
-              backgroundColor: AppColors.success,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('Error uploading avatar: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('حدث خطأ أثناء رفع الصورة الشخصية: $e'),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
+    } else if (mounted) {
+      final error = ref.read(profileControllerProvider).error;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('حدث خطأ أثناء رفع الصورة الشخصية: $error'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
     }
   }
 
@@ -252,56 +222,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _saveDetails() async {
     if (!_formKey.currentState!.validate()) return;
     
-    final parent = ref.read(currentParentProvider);
-    if (parent.id.isEmpty) return;
-
-    final dio = ref.read(apiClientProvider);
-    final parentNotifier = ref.read(currentParentProvider.notifier);
-
     setState(() {
       _isEditing = false;
     });
 
-    try {
-      final response = await dio.put('parents/${parent.id}', data: {
-        'name_ar': _nameController.text,
-        'phone': _phoneController.text,
-      });
+    final success = await ref.read(profileControllerProvider.notifier).saveDetails(
+      name: _nameController.text,
+      phone: _phoneController.text,
+    );
 
-      if (response.data != null && response.data['success'] == true) {
-        final updatedParent = response.data['parent'];
-        
-        await parentNotifier.setProfile(
-          id: parent.id,
-          name: updatedParent['name_ar'] ?? _nameController.text,
-          phoneNumber: updatedParent['phone'] ?? _phoneController.text,
-          nationalId: parent.nationalId,
-          avatarUrl: parent.avatarUrl,
-        );
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('تم حفظ التغييرات بنجاح'),
-              backgroundColor: AppColors.success,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('Error updating parent profile: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('حدث خطأ أثناء حفظ التغييرات: $e'),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('تم حفظ التغييرات بنجاح'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    } else if (mounted) {
+      final error = ref.read(profileControllerProvider).error;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('حدث خطأ أثناء حفظ التغييرات: $error'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
     }
   }
 
@@ -405,50 +353,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           if (!dialogFormKey.currentState!.validate()) return;
                           setDialogState(() => isSubmittingPassword = true);
 
-                          try {
-                            final dio = ref.read(apiClientProvider);
-                            final response = await dio.post('user/update-password', data: {
-                              'current_password': currentPasswordController.text,
-                              'new_password': newPasswordController.text,
-                              'new_password_confirmation': confirmPasswordController.text,
-                            });
+                          final errorMsg = await ref.read(profileControllerProvider.notifier).changePassword(
+                            currentPassword: currentPasswordController.text,
+                            newPassword: newPasswordController.text,
+                            confirmPassword: confirmPasswordController.text,
+                          );
 
-                            if (response.data != null && response.data['success'] == true) {
-                              if (context.mounted) {
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text('تم تغيير كلمة المرور بنجاح'),
-                                    backgroundColor: AppColors.success,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                );
-                              }
-                            } else {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(response.data['message'] ?? 'فشل تغيير كلمة المرور'),
-                                    backgroundColor: AppColors.error,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                );
-                              }
+                          if (errorMsg == null) {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('تم تغيير كلمة المرور بنجاح'),
+                                  backgroundColor: AppColors.success,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              );
                             }
-                          } catch (e) {
+                          } else {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: const Text('كلمة المرور الحالية غير صحيحة'),
+                                  content: Text(errorMsg),
                                   backgroundColor: AppColors.error,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
                               );
                             }
-                          } finally {
+                          }
+                          
+                          if (context.mounted) {
                             setDialogState(() => isSubmittingPassword = false);
                           }
                         },
