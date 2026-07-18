@@ -13,6 +13,8 @@ import '../../../../core/providers/schedule_provider.dart';
 import '../../../../core/providers/finance_provider.dart';
 import '../../../../core/providers/notifications_provider.dart';
 
+import '../../../../core/services/badge_service.dart';
+
 part 'auth_provider.g.dart';
 
 @Riverpod(keepAlive: true)
@@ -163,8 +165,13 @@ class Auth extends _$Auth {
     state = const AsyncValue.loading();
     try {
       final dio = ref.read(apiClientProvider);
-      // Invalidate Sanctum token on the backend
-      await dio.post('logout');
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      final Map<String, dynamic> logoutData = {};
+      if (fcmToken != null) {
+        logoutData['fcm_token'] = fcmToken;
+      }
+      // Invalidate Sanctum token and detach FCM token on the backend
+      await dio.post('logout', data: logoutData);
     } catch (e) {
       debugPrint('Error invalidating token on server: $e');
     } finally {
@@ -173,6 +180,13 @@ class Auth extends _$Auth {
         await FirebaseMessaging.instance.deleteToken();
       } catch (e) {
         debugPrint('Error deleting FCM token on logout: $e');
+      }
+
+      // Clear cached badge count
+      try {
+        await BadgeService.clearBadge();
+      } catch (e) {
+        debugPrint('Error clearing badge: $e');
       }
 
       // Always delete local token and set auth state to false (logged out)
