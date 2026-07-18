@@ -61,7 +61,7 @@ class Children extends _$Children {
           );
         }).toList();
 
-        if (ref.mounted) {
+        if (ref.mounted && ref.read(currentParentProvider).id == parent.id) {
           state = mapped;
         }
       }

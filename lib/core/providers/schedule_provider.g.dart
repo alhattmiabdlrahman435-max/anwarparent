@@ -41,7 +41,7 @@ final class ClassSchedulesProvider
   }
 }
 
-String _$classSchedulesHash() => r'65c7b41880e211a67c64a495c7071f65edb64cfb';
+String _$classSchedulesHash() => r'2f8801c75648a7285b126e05ddb3e1ce7886660d';
 
 abstract class _$ClassSchedules extends $Notifier<List<ClassSchedule>> {
   List<ClassSchedule> build();

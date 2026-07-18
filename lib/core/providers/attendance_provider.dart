@@ -5,6 +5,7 @@ import '../models/student.dart';
 import '../network/api_client.dart';
 import '../network/api_routes.dart';
 import 'children_provider.dart';
+import 'parent_provider.dart';
 
 part 'attendance_provider.g.dart';
 
@@ -19,6 +20,7 @@ class AttendanceData extends _$AttendanceData {
   }
 
   Future<List<AttendanceRecord>> _loadForKids(List<Student> kids) async {
+    final parentId = ref.read(currentParentProvider).id;
     final dio = ref.read(apiClientProvider);
     
     // Load attendance for all children in parallel for faster loading
@@ -59,6 +61,10 @@ class AttendanceData extends _$AttendanceData {
         return null;
       }),
     );
+
+    // Session ownership check: discard if parent changed during fetch
+    if (!ref.mounted) return [];
+    if (ref.read(currentParentProvider).id != parentId) return [];
 
     return results.whereType<AttendanceRecord>().toList();
   }

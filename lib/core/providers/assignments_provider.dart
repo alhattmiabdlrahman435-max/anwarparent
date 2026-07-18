@@ -73,7 +73,7 @@ class Assignments extends _$Assignments {
           }
         }
 
-        if (ref.mounted) {
+        if (ref.mounted && ref.read(currentParentProvider).id == parent.id) {
           state = parsed;
         }
       }

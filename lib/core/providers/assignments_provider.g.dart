@@ -41,7 +41,7 @@ final class AssignmentsProvider
   }
 }
 
-String _$assignmentsHash() => r'16a1acd482fd419db1d61c153744b9cce3fc0734';
+String _$assignmentsHash() => r'9b4dbf2fae595b440e644384c01a5f915415e1bc';
 
 abstract class _$Assignments extends $Notifier<List<Assignment>> {
   List<Assignment> build();

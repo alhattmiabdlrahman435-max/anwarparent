@@ -4,6 +4,7 @@ import '../models/grade.dart';
 import '../models/student.dart';
 import '../network/api_client.dart';
 import 'children_provider.dart';
+import 'parent_provider.dart';
 
 part 'grades_provider.g.dart';
 
@@ -24,6 +25,7 @@ class Grades extends _$Grades {
   }
 
   Future<void> _loadGradesForKids(List<Student> kids) async {
+    final parentId = ref.read(currentParentProvider).id;
     try {
       final dio = ref.read(apiClientProvider);
 
@@ -38,7 +40,8 @@ class Grades extends _$Grades {
               // Group by subject_id
               final Map<int, List<dynamic>> grouped = {};
               for (final record in list) {
-                final subjectId = record['subject_id'] as int;
+                final subjectId = int.tryParse(record['subject_id']?.toString() ?? '') ?? 0;
+                if (subjectId == 0) continue;
                 grouped.putIfAbsent(subjectId, () => []).add(record);
               }
 
@@ -73,6 +76,7 @@ class Grades extends _$Grades {
       );
 
       if (!ref.mounted) return;
+      if (ref.read(currentParentProvider).id != parentId) return;
 
       final allGrades = results.expand((grades) => grades).toList();
       state = allGrades;

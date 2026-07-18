@@ -4,6 +4,7 @@ import '../models/class_schedule.dart';
 import '../models/student.dart';
 import '../network/api_client.dart';
 import 'children_provider.dart';
+import 'parent_provider.dart';
 
 part 'schedule_provider.g.dart';
 
@@ -19,6 +20,7 @@ class ClassSchedules extends _$ClassSchedules {
   }
 
   Future<void> _loadSchedules(List<Student> kids) async {
+    final parentId = ref.read(currentParentProvider).id;
     try {
       final dio = ref.read(apiClientProvider);
       final response = await dio.get('schedules');
@@ -98,7 +100,7 @@ class ClassSchedules extends _$ClassSchedules {
           }
         }
 
-        if (ref.mounted) {
+        if (ref.mounted && ref.read(currentParentProvider).id == parentId) {
           state = parsedSchedules;
         }
       }

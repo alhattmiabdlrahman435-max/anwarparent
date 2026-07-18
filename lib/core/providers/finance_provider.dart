@@ -4,6 +4,7 @@ import '../models/student_finance.dart';
 import '../models/student.dart';
 import '../network/api_client.dart';
 import 'children_provider.dart';
+import 'parent_provider.dart';
 
 part 'finance_provider.g.dart';
 
@@ -23,6 +24,7 @@ class Finance extends _$Finance {
   }
 
   Future<void> _loadFinanceForKids(List<Student> kids) async {
+    final parentId = ref.read(currentParentProvider).id;
     try {
       final dio = ref.read(apiClientProvider);
 
@@ -42,7 +44,7 @@ class Finance extends _$Finance {
 
       final allSummaries = results.whereType<StudentFinanceSummary>().toList();
 
-      if (ref.mounted) {
+      if (ref.mounted && ref.read(currentParentProvider).id == parentId) {
         state = allSummaries;
       }
     } catch (e) {
