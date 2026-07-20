@@ -11,17 +11,25 @@ part 'grades_provider.g.dart';
 @Riverpod(keepAlive: true)
 class Grades extends _$Grades {
 
+  List<String> _loadedKidIds = [];
+
   @override
   List<SubjectGrade> build() {
     final kids = ref.watch(childrenProvider);
     if (kids.isEmpty) {
+      _loadedKidIds = [];
       return [];
     }
 
-    // Schedule the load in a microtask to avoid mutating state during the build phase
+    final kidIds = kids.map((k) => k.id).toList();
+    if (listEquals(_loadedKidIds, kidIds)) {
+      return state;
+    }
+
+    _loadedKidIds = kidIds;
     Future.microtask(() => _loadGradesForKids(kids));
 
-    return [];
+    return state;
   }
 
   Future<void> _loadGradesForKids(List<Student> kids) async {

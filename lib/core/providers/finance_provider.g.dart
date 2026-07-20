@@ -13,7 +13,7 @@ part of 'finance_provider.dart';
 final financeProvider = FinanceProvider._();
 
 final class FinanceProvider
-    extends $NotifierProvider<Finance, List<StudentFinanceSummary>> {
+    extends $AsyncNotifierProvider<Finance, List<StudentFinanceSummary>> {
   FinanceProvider._()
     : super(
         from: null,
@@ -31,34 +31,29 @@ final class FinanceProvider
   @$internal
   @override
   Finance create() => Finance();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(List<StudentFinanceSummary> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<List<StudentFinanceSummary>>(value),
-    );
-  }
 }
 
-String _$financeHash() => r'9f788fada3dceadc64a602d84f5f24616e282c42';
+String _$financeHash() => r'95d89068ecadfe1cba3b5b947055c05eeb98bf68';
 
-abstract class _$Finance extends $Notifier<List<StudentFinanceSummary>> {
-  List<StudentFinanceSummary> build();
+abstract class _$Finance extends $AsyncNotifier<List<StudentFinanceSummary>> {
+  FutureOr<List<StudentFinanceSummary>> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final ref =
         this.ref
-            as $Ref<List<StudentFinanceSummary>, List<StudentFinanceSummary>>;
+            as $Ref<
+              AsyncValue<List<StudentFinanceSummary>>,
+              List<StudentFinanceSummary>
+            >;
     final element =
         ref.element
             as $ClassProviderElement<
               AnyNotifier<
-                List<StudentFinanceSummary>,
+                AsyncValue<List<StudentFinanceSummary>>,
                 List<StudentFinanceSummary>
               >,
-              List<StudentFinanceSummary>,
+              AsyncValue<List<StudentFinanceSummary>>,
               Object?,
               Object?
             >;

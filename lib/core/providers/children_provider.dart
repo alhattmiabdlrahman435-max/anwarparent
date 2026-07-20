@@ -17,13 +17,21 @@ class ChildrenLoading extends _$ChildrenLoading {
 
 @Riverpod(keepAlive: true)
 class Children extends _$Children {
+  String? _loadedParentId;
+
   @override
   List<Student> build() {
     final parent = ref.watch(currentParentProvider);
-    if (parent.id.isNotEmpty) {
-      _loadFromBackend();
+    if (parent.id.isEmpty) {
+      _loadedParentId = null;
+      return [];
     }
-    return [];
+    if (_loadedParentId == parent.id) {
+      return state;
+    }
+    _loadedParentId = parent.id;
+    Future.microtask(() => _loadFromBackend());
+    return state;
   }
 
   Future<void> _loadFromBackend() async {

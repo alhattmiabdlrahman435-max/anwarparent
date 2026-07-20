@@ -3,16 +3,25 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/app_notification.dart';
 import '../network/api_client.dart';
 import '../services/badge_service.dart';
+import 'parent_provider.dart';
 
 part 'notifications_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class Notifications extends _$Notifications {
+  String? _loadedParentId;
+
   @override
   FutureOr<List<AppNotification>> build() async {
-    // FCM foreground listening is centralized in main.dart (_ParentAppState).
-    // It calls ref.invalidate(notificationsProvider) when a notification arrives,
-    // which triggers a rebuild of this provider automatically.
+    final parent = ref.watch(currentParentProvider);
+    if (parent.id.isEmpty) {
+      _loadedParentId = null;
+      return [];
+    }
+    if (_loadedParentId == parent.id && state.hasValue) {
+      return state.requireValue;
+    }
+    _loadedParentId = parent.id;
     return _loadNotifications();
   }
 

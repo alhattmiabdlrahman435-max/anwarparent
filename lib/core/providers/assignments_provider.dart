@@ -8,10 +8,21 @@ part 'assignments_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class Assignments extends _$Assignments {
+  String? _loadedParentId;
+
   @override
   List<Assignment> build() {
-    _loadFromBackend();
-    return [];
+    final parent = ref.watch(currentParentProvider);
+    if (parent.id.isEmpty) {
+      _loadedParentId = null;
+      return [];
+    }
+    if (_loadedParentId == parent.id) {
+      return state;
+    }
+    _loadedParentId = parent.id;
+    Future.microtask(() => _loadFromBackend());
+    return state;
   }
 
   Future<void> _loadFromBackend() async {

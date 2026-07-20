@@ -10,13 +10,24 @@ part 'schedule_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class ClassSchedules extends _$ClassSchedules {
+  List<String> _loadedKidIds = [];
+
   @override
   List<ClassSchedule> build() {
     final kids = ref.watch(childrenProvider);
-    if (kids.isEmpty) return [];
+    if (kids.isEmpty) {
+      _loadedKidIds = [];
+      return [];
+    }
 
+    final kidIds = kids.map((k) => k.id).toList();
+    if (listEquals(_loadedKidIds, kidIds)) {
+      return state;
+    }
+
+    _loadedKidIds = kidIds;
     Future.microtask(() => _loadSchedules(kids));
-    return [];
+    return state;
   }
 
   Future<void> _loadSchedules(List<Student> kids) async {

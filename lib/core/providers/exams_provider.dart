@@ -2,15 +2,27 @@ import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/exam_schedule.dart';
 import '../network/api_client.dart';
+import 'parent_provider.dart';
 
 part 'exams_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class Exams extends _$Exams {
+  String? _loadedParentId;
+
   @override
   List<ExamSchedule> build() {
-    _fetch();
-    return [];
+    final parent = ref.watch(currentParentProvider);
+    if (parent.id.isEmpty) {
+      _loadedParentId = null;
+      return [];
+    }
+    if (_loadedParentId == parent.id) {
+      return state;
+    }
+    _loadedParentId = parent.id;
+    Future.microtask(() => _fetch());
+    return state;
   }
 
   Future<void> _fetch() async {

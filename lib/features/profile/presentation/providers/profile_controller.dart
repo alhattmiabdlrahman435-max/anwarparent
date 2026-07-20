@@ -101,9 +101,20 @@ class ProfileController extends _$ProfileController {
         return errorMsg;
       }
     } catch (e, st) {
-      const fallbackError = 'كلمة المرور الحالية غير صحيحة';
-      state = AsyncValue.error(fallbackError, st);
-      return fallbackError;
+      String errorMessage = 'كلمة المرور الحالية غير صحيحة';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data != null && data is Map) {
+          if (data['errors'] != null && data['errors'] is Map) {
+            final errors = data['errors'] as Map;
+            errorMessage = errors.values.map((v) => v is List ? v.join(', ') : v.toString()).join('\n');
+          } else {
+            errorMessage = data['message'] ?? errorMessage;
+          }
+        }
+      }
+      state = AsyncValue.error(errorMessage, st);
+      return errorMessage;
     }
   }
 }

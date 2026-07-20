@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/extensions/localization_extension.dart';
 import '../../../../core/providers/children_provider.dart';
 import '../../../../core/providers/finance_provider.dart';
@@ -37,18 +38,7 @@ class _FeesScreenState extends ConsumerState<FeesScreen> {
     final subTextColor = isDark ? Colors.white70 : const Color(0xFF64748B);
 
     final currentChild = ref.watch(currentChildProvider);
-    final financeRecords = ref.watch(financeProvider);
-
-    StudentFinanceSummary? financeSummary;
-    if (currentChild != null && financeRecords.isNotEmpty) {
-      try {
-        financeSummary = financeRecords.firstWhere(
-          (f) => f.studentId == currentChild.id,
-        );
-      } catch (_) {
-        financeSummary = null;
-      }
-    }
+    final financeState = ref.watch(financeProvider);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -75,143 +65,173 @@ class _FeesScreenState extends ConsumerState<FeesScreen> {
                         ),
                       ),
                     )
-                  else if (financeRecords.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40.0),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  else if (financeSummary == null)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40.0),
-                        child: Text(
-                          'لا توجد رسوم مالية مسجلة لهذا الطالب',
-                          style: TextStyle(
-                            color: textColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    )
-                  else ...[
-                    // Summary Card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF062A5A), Color(0xFF14448A)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(
-                              0xFF062A5A,
-                            ).withValues(alpha: 0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.loc.totalFees,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            context.loc.currencySar(
-                              financeSummary.totalFees.toStringAsFixed(0),
-                            ),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildSummaryItem(
-                                  context.loc.paid,
-                                  financeSummary.paidFees.toStringAsFixed(0),
-                                  Colors.greenAccent,
-                                ),
-                              ),
-                              Container(
-                                width: 1,
-                                height: 40,
-                                color: Colors.white24,
-                              ),
-                              Expanded(
-                                child: _buildSummaryItem(
-                                  context.loc.remaining,
-                                  financeSummary.remainingFees.toStringAsFixed(
-                                    0,
+                  else
+                    ...financeState.when(
+                      data: (records) {
+                        StudentFinanceSummary? financeSummary;
+                        try {
+                          financeSummary = records.firstWhere(
+                            (f) => f.studentId == currentChild.id,
+                          );
+                        } catch (_) {
+                          financeSummary = null;
+                        }
+
+                        if (financeSummary == null) {
+                          return [
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 40.0),
+                                child: Text(
+                                  'لا توجد رسوم مالية مسجلة لهذا الطالب',
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  Colors.redAccent,
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
+                            )
+                          ];
+                        }
 
-                    // History Header
-                    Text(
-                      context.loc.paymentHistory,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Payment Records
-                    if (financeSummary.payments.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 20.0),
-                          child: Text(
-                            'لم يتم تسجيل أي عمليات دفع بعد',
-                            style: TextStyle(color: subTextColor),
-                          ),
-                        ),
-                      )
-                    else
-                      ...financeSummary.payments.map(
-                        (payment) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: _buildPaymentCard(
-                            context: context,
-                            date: DateFormat(
-                              'dd MMM yyyy',
-                              Localizations.localeOf(context).languageCode,
-                            ).format(payment.paymentDate),
-                            amount: context.loc.currencySar(
-                              payment.amount.toStringAsFixed(0),
+                        return [
+                          // Summary Card
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF062A5A), Color(0xFF14448A)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFF062A5A,
+                                  ).withValues(alpha: 0.3),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
                             ),
-                            refNo: payment.referenceNo,
-                            cardColor: cardColor,
-                            textColor: textColor,
-                            subTextColor: subTextColor,
-                            isDark: isDark,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  context.loc.totalFees,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  context.loc.currencySar(
+                                    financeSummary.totalFees.toStringAsFixed(0),
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildSummaryItem(
+                                        context.loc.paid,
+                                        financeSummary.paidFees.toStringAsFixed(0),
+                                        Colors.greenAccent,
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 1,
+                                      height: 40,
+                                      color: Colors.white24,
+                                    ),
+                                    Expanded(
+                                      child: _buildSummaryItem(
+                                        context.loc.remaining,
+                                        financeSummary.remainingFees.toStringAsFixed(
+                                          0,
+                                        ),
+                                        Colors.redAccent,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+
+                          // History Header
+                          Text(
+                            context.loc.paymentHistory,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: textColor,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Payment Records
+                          if (financeSummary.payments.isEmpty)
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                                child: Text(
+                                  'لم يتم تسجيل أي عمليات دفع بعد',
+                                  style: TextStyle(color: subTextColor),
+                                ),
+                              ),
+                            )
+                          else
+                            ...financeSummary.payments.map(
+                              (payment) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: _buildPaymentCard(
+                                  context: context,
+                                  date: DateFormat(
+                                    'dd MMM yyyy',
+                                    Localizations.localeOf(context).languageCode,
+                                  ).format(payment.paymentDate),
+                                  amount: context.loc.currencySar(
+                                    payment.amount.toStringAsFixed(0),
+                                  ),
+                                  refNo: payment.referenceNo,
+                                  cardColor: cardColor,
+                                  textColor: textColor,
+                                  subTextColor: subTextColor,
+                                  isDark: isDark,
+                                ),
+                              ),
+                            ),
+                        ];
+                      },
+                      loading: () => [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                      error: (err, stack) => [
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40.0),
+                            child: Text(
+                              'خطأ في تحميل البيانات المالية',
+                              style: TextStyle(color: AppColors.error),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                      ],
+                    ),
                 ]),
               ),
             ),

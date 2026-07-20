@@ -10,8 +10,19 @@ part 'absence_requests_provider.g.dart';
 
 @riverpod
 class AbsenceRequests extends _$AbsenceRequests {
+  String? _loadedParentId;
+
   @override
   FutureOr<List<AbsenceRequest>> build() async {
+    final parent = ref.watch(currentParentProvider);
+    if (parent.id.isEmpty) {
+      _loadedParentId = null;
+      return [];
+    }
+    if (_loadedParentId == parent.id && state.hasValue) {
+      return state.requireValue;
+    }
+    _loadedParentId = parent.id;
     return _loadRequests();
   }
 

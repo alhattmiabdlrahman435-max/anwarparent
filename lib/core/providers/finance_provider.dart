@@ -4,64 +4,61 @@ import '../models/student_finance.dart';
 import '../models/student.dart';
 import '../network/api_client.dart';
 import 'children_provider.dart';
-import 'parent_provider.dart';
 
 part 'finance_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class Finance extends _$Finance {
+  List<String> _loadedKidIds = [];
 
   @override
-  List<StudentFinanceSummary> build() {
+  FutureOr<List<StudentFinanceSummary>> build() async {
     final kids = ref.watch(childrenProvider);
     if (kids.isEmpty) {
+      _loadedKidIds = [];
       return [];
     }
 
-    Future.microtask(() => _loadFinanceForKids(kids));
+    final kidIds = kids.map((k) => k.id).toList();
+    if (listEquals(_loadedKidIds, kidIds) && state.hasValue) {
+      return state.requireValue;
+    }
 
-    return [];
+    _loadedKidIds = kidIds;
+    return _loadFinanceForKids(kids);
   }
 
-  Future<void> _loadFinanceForKids(List<Student> kids) async {
-    final parentId = ref.read(currentParentProvider).id;
-    try {
-      final dio = ref.read(apiClientProvider);
+  Future<List<StudentFinanceSummary>> _loadFinanceForKids(List<Student> kids) async {
+    final dio = ref.read(apiClientProvider);
 
-      // Load finance for all children in parallel for faster loading
-      final results = await Future.wait(
-        kids.map((kid) async {
-          final response = await dio.get('finance/student/${kid.id}');
-          if (response.data != null && response.data['success'] == true) {
-            return StudentFinanceSummary.fromJson(
-              response.data['tuition'] ?? {},
-              response.data['payments'] ?? [],
-            );
-          }
-          return null;
-        }),
-      );
+    final results = await Future.wait(
+      kids.map((kid) async {
+        final response = await dio.get('finance/student/${kid.id}');
+        if (response.data != null && response.data['success'] == true) {
+          return StudentFinanceSummary.fromJson(
+            response.data['tuition'] ?? {},
+            response.data['payments'] ?? [],
+          );
+        }
+        return null;
+      }),
+    );
 
-      final allSummaries = results.whereType<StudentFinanceSummary>().toList();
-
-      if (ref.mounted && ref.read(currentParentProvider).id == parentId) {
-        state = allSummaries;
-      }
-    } catch (e) {
-      debugPrint('Error loading student finance data: $e');
-    }
+    return results.whereType<StudentFinanceSummary>().toList();
   }
 
   Future<void> refresh() async {
     final kids = ref.read(childrenProvider);
     if (kids.isNotEmpty) {
-      await _loadFinanceForKids(kids);
+      state = const AsyncValue.loading();
+      state = await AsyncValue.guard(() => _loadFinanceForKids(kids));
     }
   }
 
   StudentFinanceSummary? getFinanceForStudent(String studentId) {
+    if (!state.hasValue) return null;
     try {
-      return state.firstWhere((f) => f.studentId == studentId);
+      return state.requireValue.firstWhere((f) => f.studentId == studentId);
     } catch (_) {
       return null;
     }

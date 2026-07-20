@@ -11,11 +11,22 @@ part 'attendance_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class AttendanceData extends _$AttendanceData {
+  List<String> _loadedKidIds = [];
+
   @override
   FutureOr<List<AttendanceRecord>> build() async {
     final kids = ref.watch(childrenProvider);
-    if (kids.isEmpty) return [];
+    if (kids.isEmpty) {
+      _loadedKidIds = [];
+      return [];
+    }
 
+    final kidIds = kids.map((k) => k.id).toList();
+    if (listEquals(_loadedKidIds, kidIds) && state.hasValue) {
+      return state.requireValue;
+    }
+
+    _loadedKidIds = kidIds;
     return _loadForKids(kids);
   }
 

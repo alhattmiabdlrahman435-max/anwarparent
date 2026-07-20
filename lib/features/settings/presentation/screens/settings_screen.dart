@@ -15,6 +15,7 @@ import 'privacy_policy_screen.dart';
 import 'contact_us_screen.dart';
 import 'help_center_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
+import '../../../profile/presentation/screens/change_password_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -65,6 +66,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => const ProfileScreen(),
+                          ),
+                        ),
+                      ),
+                      _Divider(),
+                      _SettingsTile(
+                        icon: PhosphorIcons.lock(
+                          PhosphorIconsStyle.duotone,
+                        ),
+                        title: isArabic ? 'تغيير كلمة المرور' : 'Change Password',
+                        subtitle: isArabic ? 'تحديث كلمة المرور الخاصة بك' : 'Update your password',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ChangePasswordScreen(),
                           ),
                         ),
                       ),

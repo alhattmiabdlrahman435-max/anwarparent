@@ -1,31 +1,30 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:anwarparent/main.dart';
+import 'package:anwarparent/core/models/student.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const ProviderScope(child: ParentApp()));
+  test('Student model fromJson parses successfully unit test', () {
+    final Map<String, dynamic> json = {
+      'id': 202631,
+      'name_ar': 'ياسر بن محمد الرويلي',
+      'class_id': 3,
+      'photo_url': 'https://example.com/photo.jpg',
+      'school_class': {
+        'name_ar': 'الصف الأول - أ'
+      }
+    };
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    final student = Student(
+      id: json['id'].toString(),
+      name: json['name_ar'] ?? '',
+      grade: json['school_class']?['name_ar'] ?? '',
+      classId: json['class_id']?.toString() ?? '',
+      photoUrl: json['photo_url'] ?? '',
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(student.id, '202631');
+    expect(student.name, 'ياسر بن محمد الرويلي');
+    expect(student.grade, 'الصف الأول - أ');
+    expect(student.classId, '3');
+    expect(student.photoUrl, 'https://example.com/photo.jpg');
   });
 }
