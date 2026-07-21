@@ -12,6 +12,7 @@ import '../../../../core/providers/parent_provider.dart';
 import '../../../../core/models/parent_profile.dart';
 import '../../../../core/widgets/app_sliver_header.dart';
 import '../../../../core/extensions/localization_extension.dart';
+import '../../../../core/services/image_compress_service.dart';
 import '../providers/profile_controller.dart';
 
 
@@ -23,8 +24,11 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  // Real picked image path
-  String? _pickedImagePath;
+  // Real picked image path (preview only)
+  File? _pickedImageFile;
+
+  // Upload progress: null = idle, 0.0-1.0 = uploading
+  double? _uploadProgress;
   
   bool _isEditing = false;
   final _formKey = GlobalKey<FormState>();
@@ -163,9 +167,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Future<void> _uploadAvatar(String path) async {
-    final success = await ref.read(profileControllerProvider.notifier).uploadAvatar(path);
-    if (success && mounted) {
+  Future<void> _uploadAvatar(File imageFile) async {
+    setState(() {
+      _uploadProgress = 0.0;
+    });
+
+    final success = await ref
+        .read(profileControllerProvider.notifier)
+        .uploadAvatar(
+          imageFile,
+          onProgress: (p) {
+            if (mounted) setState(() => _uploadProgress = p);
+          },
+        );
+
+    if (!mounted) return;
+    setState(() => _uploadProgress = null);
+
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('تم تحديث صورة الملف الشخصي بنجاح'),
@@ -174,14 +193,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
-    } else if (mounted) {
+    } else {
       final error = ref.read(profileControllerProvider).error;
+      final isRetryable = error is String &&
+          (error.contains('الاتصال') || error.contains('غير متوقع'));
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('حدث خطأ أثناء رفع الصورة الشخصية: $error'),
+          content: Text(error?.toString() ?? 'حدث خطأ أثناء رفع الصورة'),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          // Retry action only for network/server errors
+          action: isRetryable && _pickedImageFile != null
+              ? SnackBarAction(
+                  label: 'إعادة المحاولة',
+                  textColor: Colors.white,
+                  onPressed: () => _uploadAvatar(_pickedImageFile!),
+                )
+              : null,
         ),
       );
     }
@@ -189,33 +219,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: source,
-        maxWidth: 500,
-        maxHeight: 500,
-        imageQuality: 85,
+      final result = await ImageCompressService.pickAndCompress(source: source);
+      if (result == null) return; // user cancelled
+
+      if (!mounted) return;
+      setState(() {
+        _pickedImageFile = result.file;
+      });
+
+      await _uploadAvatar(result.file);
+    } on ImageValidationException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
-      
-      if (image != null) {
-        if (!mounted) return;
-        setState(() {
-          _pickedImagePath = image.path;
-        });
-        
-        await _uploadAvatar(image.path);
-      }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل في الحصول على الصورة: $e'),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('تعذّر فتح الصورة: $e'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
     }
   }
 
@@ -495,14 +527,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 child: CircleAvatar(
                                   radius: 54,
                                   backgroundColor: Colors.grey[200],
-                                  backgroundImage: _pickedImagePath != null
-                                      ? FileImage(File(_pickedImagePath!)) as ImageProvider
+                                  backgroundImage: _pickedImageFile != null
+                                      ? FileImage(_pickedImageFile!) as ImageProvider
                                       : (() {
                                           final normalized = AppConstants.normalizeUrl(parent.avatarUrl);
                                           return (normalized != null && normalized.length > 5
                                               ? NetworkImage(normalized) as ImageProvider
                                               : const AssetImage('assets/icons/app_icon.jpeg') as ImageProvider);
                                         })(),
+                                  child: _uploadProgress != null
+                                      ? Container(
+                                          decoration: const BoxDecoration(
+                                            color: Colors.black54,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              value: _uploadProgress,
+                                              color: Colors.white,
+                                              strokeWidth: 3,
+                                            ),
+                                          ),
+                                        )
+                                      : null,
                                 ),
                               ),
                               Positioned(
