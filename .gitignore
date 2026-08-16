@@ -48,3 +48,16 @@ app.*.map.json
 graphify-out/
 .graphifyignore
 
+# Datasets & Data files
+/csv/
+*.csv
+*.xlsx
+*.xls
+*.tsv
+
+# Analytical files & Generated Reports
+*.pdf
+/FINAL_SUBMISSION/
+/FINAL_SUBMISSION_READY/
+
+

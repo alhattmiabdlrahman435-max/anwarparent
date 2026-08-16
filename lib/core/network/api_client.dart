@@ -101,3 +101,22 @@ Dio apiClient(Ref ref) {
 
   return dio;
 }
+
+extension DioExceptionHelper on DioException {
+  String get userFriendlyMessage {
+    if (response?.data != null && response!.data is Map && response!.data['message'] != null) {
+      return response!.data['message'].toString();
+    }
+    if (error != null && error is String && (error as String).isNotEmpty) {
+      return error as String;
+    }
+    if (type == DioExceptionType.connectionTimeout ||
+        type == DioExceptionType.receiveTimeout ||
+        type == DioExceptionType.sendTimeout ||
+        type == DioExceptionType.connectionError) {
+      return 'تعذر الاتصال بالخادم، يرجى التحقق من اتصال الإنترنت والمحاولة مجدداً.';
+    }
+    return 'حدث خطأ أثناء معالجة الطلب، يرجى المحاولة مرة أخرى.';
+  }
+}
+
