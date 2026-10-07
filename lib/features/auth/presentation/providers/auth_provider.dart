@@ -214,4 +214,29 @@ class Auth extends _$Auth {
   void setCachedToken(String token) {
     _cachedToken = token;
   }
+
+  Future<Map<String, dynamic>> resetPasswordWithNationalId(String nationalId) async {
+    try {
+      final dio = ref.read(apiClientProvider);
+      final response = await dio.post(
+        ApiRoutes.forgotPasswordReset,
+        data: {'national_id': nationalId.trim()},
+      );
+
+      if (response.data != null && response.data['success'] == true) {
+        return Map<String, dynamic>.from(response.data);
+      } else {
+        throw Exception(response.data?['message'] ?? 'فشلت عملية استعادة كلمة المرور');
+      }
+    } catch (e) {
+      if (e is DioException) {
+        final msg = e.response?.data?['message'];
+        if (msg != null && msg.toString().isNotEmpty) {
+          throw Exception(msg.toString());
+        }
+      }
+      rethrow;
+    }
+  }
 }
+

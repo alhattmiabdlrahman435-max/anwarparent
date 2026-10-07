@@ -2,6 +2,7 @@ class ApiRoutes {
   // Auth
   static const String login = 'login';
   static const String logout = 'logout';
+  static const String forgotPasswordReset = 'forgot-password-reset';
   static const String updateFcmToken = 'user/fcm-token';
   
   // Profile
