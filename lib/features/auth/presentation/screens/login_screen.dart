@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -276,7 +277,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         fontSize: 15,
                       ),
                       decoration: InputDecoration(
-                        hintText: isArabic ? 'مثال: 1010305738' : 'e.g. 1010305738',
+                        hintText: isArabic ? 'أدخل الرقم المدني / الوطني' : 'Enter Civil / National ID',
                         hintStyle: TextStyle(
                           color: subTextColor.withValues(alpha: 0.6),
                           fontSize: 14,
@@ -461,10 +462,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 14),
                 ],
 
-                // Box showing default password
+                // Box showing default password with Copy Button
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF2C3545) : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(16),
@@ -482,24 +483,90 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           color: subTextColor,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF062A5A),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          defaultPassword,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2,
-                            color: Colors.white,
-                            fontFamily: 'monospace',
-                          ),
-                        ),
-                      ),
+                      const SizedBox(height: 10),
+                      () {
+                        bool isCopied = false;
+                        return StatefulBuilder(
+                          builder: (context, setCopyState) {
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF062A5A),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    defaultPassword,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 2,
+                                      color: Colors.white,
+                                      fontFamily: 'monospace',
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () {
+                                    Clipboard.setData(ClipboardData(text: defaultPassword));
+                                    setCopyState(() => isCopied = true);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          isArabic
+                                              ? 'تم نسخ كلمة المرور: $defaultPassword'
+                                              : 'Password copied: $defaultPassword',
+                                        ),
+                                        backgroundColor: Colors.green,
+                                        behavior: SnackBarBehavior.floating,
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                    Future.delayed(const Duration(seconds: 2), () {
+                                      if (dialogContext.mounted) {
+                                        setCopyState(() => isCopied = false);
+                                      }
+                                    });
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                                    decoration: BoxDecoration(
+                                      color: isCopied ? Colors.green : const Color(0xFF062A5A),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          isCopied ? CupertinoIcons.checkmark_alt : CupertinoIcons.doc_on_doc,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          isCopied
+                                              ? (isArabic ? 'تم النسخ' : 'Copied')
+                                              : (isArabic ? 'نسخ' : 'Copy'),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }(),
                     ],
                   ),
                 ),

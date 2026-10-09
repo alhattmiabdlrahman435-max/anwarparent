@@ -9,6 +9,58 @@ part of 'grades_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(GradesStatus)
+final gradesStatusProvider = GradesStatusProvider._();
+
+final class GradesStatusProvider
+    extends $NotifierProvider<GradesStatus, Map<String, dynamic>> {
+  GradesStatusProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'gradesStatusProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$gradesStatusHash();
+
+  @$internal
+  @override
+  GradesStatus create() => GradesStatus();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Map<String, dynamic> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Map<String, dynamic>>(value),
+    );
+  }
+}
+
+String _$gradesStatusHash() => r'ce6473135182c86f77498bd7e1c8cc0cf307e395';
+
+abstract class _$GradesStatus extends $Notifier<Map<String, dynamic>> {
+  Map<String, dynamic> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<Map<String, dynamic>, Map<String, dynamic>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Map<String, dynamic>, Map<String, dynamic>>,
+              Map<String, dynamic>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(Grades)
 final gradesProvider = GradesProvider._();
 
@@ -41,7 +93,7 @@ final class GradesProvider
   }
 }
 
-String _$gradesHash() => r'b079b81ceb2202a4a4a4f841c3beab108fd777f3';
+String _$gradesHash() => r'ad2ba19ece79fbdf854a0df4fd27a9a343aa25fd';
 
 abstract class _$Grades extends $Notifier<List<SubjectGrade>> {
   List<SubjectGrade> build();

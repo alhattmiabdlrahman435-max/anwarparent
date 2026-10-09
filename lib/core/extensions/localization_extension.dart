@@ -32,10 +32,13 @@ extension LocalizationExtension on BuildContext {
       case 'الفيزياء':
         return loc.physics;
       case 'الشهر الأول':
+      case 'المحصلة الأولى':
         return loc.month1;
       case 'الشهر الثاني':
+      case 'المحصلة الثانية':
         return loc.month2;
       case 'الشهر الثالث':
+      case 'المحصلة الثالثة':
         return loc.month3;
       case 'الشهر الرابع':
         return loc.month4;
