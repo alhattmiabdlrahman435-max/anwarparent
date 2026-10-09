@@ -47,6 +47,11 @@ app.*.map.json
 /android/.gradle/
 .gradle/
 
+# Desktop platforms (unused/ephemeral)
+/linux/
+/macos/
+/windows/
+
 # Graphify
 graphify-out/
 .graphifyignore

@@ -9,6 +9,7 @@ import '../../../../core/providers/grades_provider.dart';
 import '../../../../core/models/grade.dart';
 import '../../../../core/models/student.dart';
 import '../../../../core/extensions/localization_extension.dart';
+import '../../services/grades_pdf_service.dart';
 
 class GradesScreen extends ConsumerStatefulWidget {
   const GradesScreen({super.key});
@@ -19,7 +20,51 @@ class GradesScreen extends ConsumerStatefulWidget {
 
 class _GradesScreenState extends ConsumerState<GradesScreen> {
   int _selectedTerm = 1;
-  int _viewMode = 0; // 0: تفصيل المواد, 1: إشعار نتيجة منتصف العام
+  int _viewMode = 0; // 0: تفصيل المواد, 1: إشعار النتيجة
+  bool _isGeneratingPdf = false;
+
+  Future<void> _exportPdfReport({
+    required Student student,
+    required List<SubjectGrade> subjects,
+    bool isShareOnly = false,
+  }) async {
+    if (_isGeneratingPdf) return;
+    setState(() => _isGeneratingPdf = true);
+
+    try {
+      if (isShareOnly) {
+        await GradesPdfService.sharePdfFile(
+          student: student,
+          subjects: subjects,
+          selectedTerm: _selectedTerm,
+        );
+      } else {
+        await GradesPdfService.printOrSharePdf(
+          student: student,
+          subjects: subjects,
+          selectedTerm: _selectedTerm,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        final isPluginMissing = e.toString().contains('MissingPluginException');
+        final errorMsg = isPluginMissing
+            ? 'يتطلب تفعيل مكتبة الـ PDF إيقاف تشغيل التطبيق بالكامل ثم إعادة بنائه وتشغيله مجدداً (flutter run).'
+            : 'حدث خطأ أثناء تصدير ملف الـ PDF: $e';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingPdf = false);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -70,7 +115,10 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: [
-          AppSliverHeader(title: context.loc.gradesAndAnalytics, showChildSwitcher: true),
+          AppSliverHeader(
+            title: context.loc.gradesAndAnalytics,
+            showChildSwitcher: true,
+          ),
 
           // Cache status banner
           if (isFromCache)
@@ -149,8 +197,8 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
             ),
           ),
 
-          // View Mode Selector (Only shown for Term 1 when grades exist)
-          if (_selectedTerm == 1 && currentChild != null && subjects.isNotEmpty)
+          // View Mode Selector (Shown when grades exist)
+          if (currentChild != null && subjects.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
@@ -276,7 +324,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                 ),
               ),
             )
-          else if (_selectedTerm == 1 && _viewMode == 1)
+          else if (_viewMode == 1)
             SliverToBoxAdapter(
               child: _buildMidtermReportCard(
                 student: currentChild,
@@ -710,16 +758,21 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
     final primaryColor = const Color(0xFF062A5A);
     final borderColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
 
-    // Calculate totals for Term 1 (outcome + termExam)
+    // Calculate totals for selected Term
     double totalObtained = 0.0;
     final int subjectCount = subjects.length;
 
     for (final s in subjects) {
-      totalObtained += s.term1.total;
+      final termData = _selectedTerm == 1 ? s.term1 : s.term2;
+      totalObtained += termData.total;
     }
 
     final double maxTotal = subjectCount * 50.0;
     final double overallPercentage = maxTotal > 0 ? (totalObtained / maxTotal) * 100 : 0.0;
+
+    final reportTitle = _selectedTerm == 1
+        ? 'إشعار نتيجة منتصف العام - الفصل الدراسي الأول'
+        : 'إشعار نتيجة نهاية العام - الفصل الدراسي الثاني';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -755,15 +808,19 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      CupertinoIcons.doc_plaintext,
-                      color: isDark ? Colors.white : primaryColor,
-                      size: 24,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        'assets/icons/app_icon.jpeg',
+                        width: 28,
+                        height: 28,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        'رياض ومدارس أنوار العُلا الدولية النموذجية',
+                        'رياض ومدارس أنوار العلى الدولية النموذجية',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
@@ -782,9 +839,9 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                     color: primaryColor,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    'إشعار نتيجة منتصف العام - الفصل الدراسي الأول',
-                    style: TextStyle(
+                  child: Text(
+                    reportTitle,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -792,6 +849,51 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Action Button: Single prominent primary download PDF button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isGeneratingPdf
+                  ? null
+                  : () => _exportPdfReport(
+                        student: student,
+                        subjects: subjects,
+                        isShareOnly: false,
+                      ),
+              icon: _isGeneratingPdf
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(CupertinoIcons.arrow_down_doc_fill, size: 18),
+              label: Text(
+                _isGeneratingPdf
+                    ? 'جارٍ تجهيز ملف PDF...'
+                    : (_selectedTerm == 1
+                        ? 'تحميل إشعار نتيجة (الفصل الدراسي الأول) PDF'
+                        : 'تحميل إشعار نتيجة (الفصل الدراسي الثاني) PDF'),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 0,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -915,13 +1017,13 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
               children: subjects.asMap().entries.map((entry) {
                 final idx = entry.key;
                 final sub = entry.value;
-                final term1 = sub.term1;
+                final termData = _selectedTerm == 1 ? sub.term1 : sub.term2;
                 final isEven = idx % 2 == 0;
                 final rowBg = isEven
                     ? (isDark ? Colors.white.withValues(alpha: 0.02) : Colors.grey.withValues(alpha: 0.03))
                     : Colors.transparent;
-                final appreciation = _getGradeAppreciation(term1.total);
-                final appreciationColor = _getGradeAppreciationColor(term1.total, isDark);
+                final appreciation = _getGradeAppreciation(termData.total);
+                final appreciationColor = _getGradeAppreciationColor(termData.total, isDark);
 
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
@@ -943,7 +1045,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                       Expanded(
                         flex: 2,
                         child: Text(
-                          term1.outcome.toStringAsFixed(1).replaceAll('.0', ''),
+                          termData.outcome.toStringAsFixed(1).replaceAll('.0', ''),
                           textAlign: TextAlign.center,
                           textDirection: TextDirection.ltr,
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textColor),
@@ -952,7 +1054,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                       Expanded(
                         flex: 2,
                         child: Text(
-                          term1.termExam.toStringAsFixed(1).replaceAll('.0', ''),
+                          termData.termExam.toStringAsFixed(1).replaceAll('.0', ''),
                           textAlign: TextAlign.center,
                           textDirection: TextDirection.ltr,
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textColor),
@@ -961,7 +1063,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                       Expanded(
                         flex: 2,
                         child: Text(
-                          term1.total.toStringAsFixed(1).replaceAll('.0', ''),
+                          termData.total.toStringAsFixed(1).replaceAll('.0', ''),
                           textAlign: TextAlign.center,
                           textDirection: TextDirection.ltr,
                           style: TextStyle(
@@ -1010,9 +1112,9 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'المجموع العام لمنتصف العام',
-                      style: TextStyle(
+                    Text(
+                      _selectedTerm == 1 ? 'المجموع العام لمنتصف العام' : 'المجموع العام لنهاية العام',
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.white70,
@@ -1071,6 +1173,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
               _buildSignatureItem('مدير المدرسة / الختم', subTextColor),
             ],
           ),
+
         ],
       ),
     );

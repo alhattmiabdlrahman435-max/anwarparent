@@ -1,6 +1,6 @@
 class AppConfig {
   // true تعني التوصيل بالسيرفر المحلي (Localhost / Artisan Serve)
-  static const bool isLocal = true; 
+  static const bool isLocal = false; 
 
   // 1. الرابط الأساسي للـ API والاستضافة
   static const String baseUrl = 'https://msaratwasel.tech';
