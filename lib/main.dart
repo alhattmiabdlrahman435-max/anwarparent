@@ -42,7 +42,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 /// Centralized notification routing - eliminates DRY violation.
 /// Maps notification type to the correct app route.
-void _navigateByNotificationType(String type) {
+void _navigateByNotificationType(String type, {String? id}) {
   const typeToRoute = {
     'exam_schedule': '/exams',
     'exams': '/exams',
@@ -53,12 +53,20 @@ void _navigateByNotificationType(String type) {
     'grade': '/grades',
     'grades': '/grades',
     'absence_request': '/absence_history',
+    'absence': '/absence_history',
+    'attendance': '/attendance',
     'report': '/alerts',
     'alert': '/alerts',
-    'notifications': '/alerts',
+    'notifications': '/notifications',
+    'notification': '/notifications',
+    'broadcast': '/notifications',
+    'general': '/notifications',
     'finance': '/fees',
   };
-  final route = typeToRoute[type] ?? '/attendance';
+  var route = typeToRoute[type] ?? '/notifications';
+  if (route == '/notifications' && id != null && id.isNotEmpty) {
+    route = '/notifications?id=' + id;
+  }
   
   void tryNavigate(int retries) {
     final context = rootNavigatorKey.currentContext;
@@ -127,8 +135,13 @@ Future<void> _setupFirebaseMessaging() async {
     await _flutterLocalNotificationsPlugin.initialize(
       settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        final payload = response.payload ?? 'attendance';
-        _navigateByNotificationType(payload);
+        final payload = response.payload ?? 'notifications';
+        if (payload.contains(':')) {
+          final parts = payload.split(':');
+          _navigateByNotificationType(parts[0], id: parts[1]);
+        } else {
+          _navigateByNotificationType(payload);
+        }
       },
     );
 
@@ -210,8 +223,9 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
         debugPrint('FCM Notification clicked from terminated state.');
         // Wait a short moment for the router to be fully ready
         Future.delayed(const Duration(milliseconds: 500), () {
-          final type = initialMessage.data['type'] ?? 'attendance';
-          _navigateByNotificationType(type);
+          final type = initialMessage.data['type'] ?? 'notifications';
+          final notifId = initialMessage.data['id']?.toString();
+          _navigateByNotificationType(type, id: notifId);
         });
       }
     });
@@ -323,7 +337,7 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
               presentSound: true,
             ),
           ),
-          payload: type.isEmpty ? 'attendance' : type,
+          payload: (message.data['id'] != null) ? '${type}:${message.data['id']}' : (type.isEmpty ? 'notifications' : type),
         );
       }
     });
@@ -333,8 +347,9 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
       final type = message.data['type'] ?? '';
       _refreshProviderByType(type);
       // Ensure we navigate to the correct screen
+      final notifId = message.data['id']?.toString();
       Future.microtask(() {
-        _navigateByNotificationType(type.isEmpty ? 'attendance' : type);
+        _navigateByNotificationType(type.isEmpty ? 'notifications' : type, id: notifId);
       });
     });
   }

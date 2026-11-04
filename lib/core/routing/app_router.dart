@@ -95,7 +95,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(path: '/fees', builder: (context, state) => const FeesScreen()),
       GoRoute(
         path: '/notifications',
-        builder: (context, state) => const NotificationsScreen(),
+        builder: (context, state) {
+          final notifId = state.uri.queryParameters['id'] ?? (state.extra is String ? state.extra as String : null);
+          return NotificationsScreen(initialNotificationId: notifId);
+        },
       ),
       GoRoute(
         path: '/alerts',

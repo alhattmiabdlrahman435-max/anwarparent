@@ -96,7 +96,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
               orElse: () => assignment,
             );
 
-            final isPending = currentAssignment.status == 'pending';
+            final isPending = currentAssignment.status == 'pending' || currentAssignment.status == 'not_submitted';
             final isOverdue = isPending && currentAssignment.dueDate.isBefore(DateTime.now());
 
             return Container(
@@ -352,7 +352,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                     ),
                     const SizedBox(height: 20),
                   ],
-                  if (!isPending && currentAssignment.teacherNote != null) ...[
+                  if (currentAssignment.teacherNote != null && currentAssignment.teacherNote!.trim().isNotEmpty) ...[
                     Text(
                       isArabic ? 'ملاحظة المعلم وتقييمه' : 'Teacher Note & Feedback',
                       style: TextStyle(
@@ -442,8 +442,8 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
     }
 
     // Split daily assignments into Active vs Completed
-    final activeAssignments = dailyAssignments.where((a) => a.status == 'pending').toList();
-    final completedAssignments = dailyAssignments.where((a) => a.status == 'submitted').toList();
+    final activeAssignments = dailyAssignments.where((a) => a.status == 'pending' || a.status == 'not_submitted').toList();
+    final completedAssignments = dailyAssignments.where((a) => a.status == 'submitted' || a.status == 'submitted_late').toList();
 
     final filteredAssignments = _selectedTab == 0 ? activeAssignments : completedAssignments;
 
@@ -768,7 +768,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final subTextColor = isDark ? Colors.white70 : const Color(0xFF64748B);
     final isArabic = Localizations.localeOf(context).languageCode == 'ar';
-    final isPending = assignment.status == 'pending';
+    final isPending = assignment.status == 'pending' || assignment.status == 'not_submitted';
     final isOverdue = isPending && assignment.dueDate.isBefore(DateTime.now());
 
     return Container(
@@ -869,6 +869,38 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                           color: subTextColor,
                         ),
                       ),
+                      if (assignment.teacherNote != null && assignment.teacherNote!.trim().isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFF0FDF4),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isDark ? Colors.white12 : const Color(0xFFDCFCE7),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.star_rounded, color: Colors.amber[600], size: 16),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  '${isArabic ? "ملاحظة المعلم: " : "Teacher Note: "}${assignment.teacherNote!}',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? Colors.white : Colors.green[900],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
