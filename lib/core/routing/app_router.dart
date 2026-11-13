@@ -74,7 +74,14 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: '/assignments',
-        builder: (context, state) => const AssignmentsScreen(),
+        // من الإشعار: ?aid=رقم الواجب&date=يوم النشر  أو  ?id=رقم نسخة الطالب
+        builder: (context, state) => AssignmentsScreen(
+          // مفتاح حسب الرابط حتى يُفتح الواجب الجديد حتى لو كانت الصفحة مفتوحة أصلاً
+          key: ValueKey(state.uri.toString()),
+          initialAssignmentId: state.uri.queryParameters['aid'],
+          initialSubmissionId: state.uri.queryParameters['id'],
+          initialDate: state.uri.queryParameters['date'],
+        ),
       ),
       GoRoute(
         path: '/grades',

@@ -3,7 +3,7 @@ import '../config/app_config.dart';
 class AppConstants {
   static String get baseUrl {
     if (AppConfig.isLocal) {
-      return 'http://192.168.8.188:8000/api/';
+      return 'http://${AppConfig.localHost}:8000/api/';
     }
     return '${AppConfig.baseUrl}/api/';
   }

@@ -10,18 +10,46 @@ import '../../../../core/providers/children_provider.dart';
 import '../../../../core/providers/assignments_provider.dart';
 import '../../../../core/models/assignment.dart';
 import '../../../../core/extensions/localization_extension.dart';
+import '../widgets/assignment_attachments.dart';
+import '../../../../core/services/homework_reminder_service.dart';
+
+
+/// حالات الخادم التي تعني أن الطالب سلّم الواجب (كما في لوحة التحكم وتطبيق المعلم)
+bool isSubmittedStatus(String status) => status == 'submitted' || status == 'submitted_late';
+
+/// انتهى موعد التسليم: بعد نهاية يوم التسليم كاملاً (موعد التسليم تاريخ بدون وقت)
+bool isPastDueDate(DateTime dueDate) {
+  final endOfDueDay = DateTime(dueDate.year, dueDate.month, dueDate.day).add(const Duration(days: 1));
+  return DateTime.now().isAfter(endOfDueDay);
+}
 
 class AssignmentsScreen extends ConsumerStatefulWidget {
-  const AssignmentsScreen({super.key});
+  /// من الإشعار: رقم الواجب (aid) أو رقم نسخة الطالب (id)، ويوم نشر الواجب (YYYY-MM-DD)
+  final String? initialAssignmentId;
+  final String? initialSubmissionId;
+  final String? initialDate;
+
+  const AssignmentsScreen({
+    super.key,
+    this.initialAssignmentId,
+    this.initialSubmissionId,
+    this.initialDate,
+  });
 
   @override
   ConsumerState<AssignmentsScreen> createState() => _AssignmentsScreenState();
 }
 
 class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
-  DateTime selectedDate = DateTime.now();
-  DateTime _focusedDate = DateTime.now();
+  /// يوم محدد اختاره ولي الأمر من التقويم (null = كل الأيام، وهو الافتراضي)
+  DateTime? _dayFilter;
   int _selectedTab = 0; // 0: Active/Pending, 1: Completed/Submitted
+
+  /// فتح الواجب القادم من الإشعار مرة واحدة فقط
+  bool _deepLinkHandled = false;
+
+  bool get _hasDeepLink =>
+      (widget.initialAssignmentId?.isNotEmpty ?? false) || (widget.initialSubmissionId?.isNotEmpty ?? false);
 
   @override
   void initState() {
@@ -33,26 +61,45 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
     });
   }
 
+  /// من الإشعار: اختيار الابن الصحيح، والانتقال ليوم الواجب وتبويبه، ثم فتح تفاصيله
+  void _handleDeepLink(List<Assignment> assignments, dynamic currentChild) {
+    if (_deepLinkHandled || !_hasDeepLink || assignments.isEmpty) return;
+    final aid = widget.initialAssignmentId ?? '';
+    final sid = widget.initialSubmissionId ?? '';
+    final matches = assignments
+        .where((a) => (aid.isNotEmpty && a.assignmentId == aid) || (sid.isNotEmpty && a.id == sid))
+        .toList();
+    if (matches.isEmpty) return; // ربما لم تُحمَّل بعد؛ نعيد المحاولة عند وصول البيانات
+    _deepLinkHandled = true;
+
+    // إن كان الواجب لأكثر من ابن في نفس الصف نفضّل الابن المختار حالياً
+    final target = matches.firstWhere(
+      (a) => currentChild != null && a.studentId == currentChild.id,
+      orElse: () => matches.first,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final kids = ref.read(childrenProvider);
+      final kid = kids.where((k) => k.id == target.studentId).firstOrNull;
+      if (kid != null && (currentChild == null || currentChild.id != kid.id)) {
+        ref.read(currentChildProvider.notifier).setChild(kid);
+      }
+      setState(() {
+        _dayFilter = null;
+        _selectedTab = isSubmittedStatus(target.status) ? 1 : 0;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showAssignmentDetails(context, target, ref);
+      });
+    });
+  }
+
   bool isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  /// يحسب أقرب سبت سابق (أو نفس اليوم إن كان سبتاً)
-  DateTime _getStartOfWeek(DateTime date) {
-    // Dart weekday: 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 7=Sun
-    // Saturday = 6, so we subtract (weekday - 6) % 7 days
-    int daysToSubtract = (date.weekday - DateTime.saturday) % 7;
-    if (daysToSubtract < 0) daysToSubtract += 7;
-    final start = date.subtract(Duration(days: daysToSubtract));
-    return DateTime(start.year, start.month, start.day);
-  }
 
-  /// يُعيد 5 أيام: السبت، الأحد، الإثنين، الثلاثاء، الأربعاء
-  List<DateTime> _getWeekDays(DateTime startOfWeek) {
-    return List.generate(5, (index) {
-      return startOfWeek.add(Duration(days: index));
-    });
-  }
 
   Future<void> _openAttachment(BuildContext context, String url) async {
     final uri = Uri.parse(url);
@@ -96,8 +143,8 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
               orElse: () => assignment,
             );
 
-            final isPending = currentAssignment.status == 'pending' || currentAssignment.status == 'not_submitted';
-            final isOverdue = isPending && currentAssignment.dueDate.isBefore(DateTime.now());
+            final isPending = !isSubmittedStatus(currentAssignment.status);
+            final isOverdue = isPending && isPastDueDate(currentAssignment.dueDate);
 
             return Container(
               decoration: BoxDecoration(
@@ -113,7 +160,12 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                 right: 20,
                 bottom: 24,
               ),
-              child: Column(
+              // قابل للتمرير حتى لا يتجاوز الشاشة عند وجود نص طويل وعدة صور
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.9,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -196,9 +248,12 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                             Text(
                               isPending
                                   ? (isOverdue
-                                      ? (isArabic ? 'متأخر' : 'Overdue')
-                                      : (isArabic ? 'نشط / معلق' : 'Active / Pending'))
-                                  : (isArabic ? 'مكتمل / تم التسليم' : 'Completed / Submitted'),
+                                      // "متأخر" وحدها كانت تُفهم أنها "سلّم متأخراً"
+                                      ? (isArabic ? 'لم يُسلَّم وانتهى الموعد' : 'Not submitted, overdue')
+                                      : (isArabic ? 'لم يُسلَّم بعد' : 'Not submitted'))
+                                  : (currentAssignment.status == 'submitted_late'
+                                      ? (isArabic ? 'سلّم متأخراً' : 'Submitted late')
+                                      : (isArabic ? 'تم التسليم' : 'Submitted')),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -289,7 +344,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  if (currentAssignment.attachmentUrl != null) ...[
+                  if (currentAssignment.attachmentUrls.isNotEmpty) ...[
                     Text(
                       isArabic ? 'المرفقات' : 'Attachments',
                       style: TextStyle(
@@ -299,56 +354,11 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    InkWell(
-                      onTap: () => _openAttachment(context, currentAssignment.attachmentUrl!),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFE0F2FE),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isDark ? Colors.white10 : const Color(0xFFBAE6FD),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.picture_as_pdf,
-                              color: isDark ? Colors.red[300] : Colors.red[700],
-                              size: 32,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isArabic ? 'مرفق شرح الواجب.pdf' : 'Assignment Attachment.pdf',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDark ? Colors.white : const Color(0xFF0369A1),
-                                    ),
-                                  ),
-                                  Text(
-                                    isArabic ? 'انقر للتحميل والعرض' : 'Tap to download and view',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isDark ? Colors.white70 : const Color(0xFF0284C7),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Icon(
-                              Icons.open_in_new,
-                              color: isDark ? Colors.white70 : const Color(0xFF0284C7),
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                      ),
+                    AssignmentAttachments(
+                      urls: currentAssignment.attachmentUrls,
+                      isDark: isDark,
+                      isArabic: isArabic,
+                      onOpenFile: (url) => _openAttachment(context, url),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -410,7 +420,31 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                     ),
                     const SizedBox(height: 20),
                   ],
+                  // تذكير مخصص لهذا الواجب (غير مسلَّم وموعده لم ينتهِ)
+                  if (HomeworkReminderService.isReminderEligible(currentAssignment))
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.alarm_add_rounded),
+                        label: const Text('تذكيري في وقت محدد'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () {
+                          final kids = ref.read(childrenProvider);
+                          final childName = kids
+                              .where((c) => c.id == currentAssignment.studentId)
+                              .map((c) => c.name)
+                              .firstOrNull;
+                          _pickHomeworkReminder(context, currentAssignment, childName ?? '');
+                        },
+                      ),
+                    ),
                 ],
+              ),
               ),
             );
           },
@@ -426,28 +460,40 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
     final isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
     final currentChild = ref.watch(currentChildProvider);
+    final children = ref.watch(childrenProvider);
     final assignments = ref.watch(assignmentsProvider);
+    _handleDeepLink(assignments, currentChild);
 
-    List<Assignment> dailyAssignments = [];
-    if (currentChild != null) {
-      dailyAssignments = assignments
-          .where(
-            (a) =>
+    // كل واجبات الابن المختار (كل الأيام)، أو يوم محدد إن اختاره ولي الأمر من التقويم
+    final childAssignments = currentChild == null
+        ? <Assignment>[]
+        : (assignments
+            .where((a) =>
                 a.studentId == currentChild.id &&
-                a.date.year == selectedDate.year &&
-                a.date.month == selectedDate.month &&
-                a.date.day == selectedDate.day,
-          )
-          .toList();
-    }
+                (_dayFilter == null || isSameDay(a.date, _dayFilter!)))
+            .toList()
+          ..sort((a, b) => b.date.compareTo(a.date)));
 
-    // Split daily assignments into Active vs Completed
-    final activeAssignments = dailyAssignments.where((a) => a.status == 'pending' || a.status == 'not_submitted').toList();
-    final completedAssignments = dailyAssignments.where((a) => a.status == 'submitted' || a.status == 'submitted_late').toList();
-
+    // قاعدة واحدة: المسلَّم = "تم التسليم" أو "سلّم متأخراً"، وكل ما عداه لم يُسلَّم بعد
+    final completedAssignments = childAssignments.where((a) => isSubmittedStatus(a.status)).toList();
+    final activeAssignments = childAssignments.where((a) => !isSubmittedStatus(a.status)).toList();
     final filteredAssignments = _selectedTab == 0 ? activeAssignments : completedAssignments;
 
-    final weekDays = _getWeekDays(_getStartOfWeek(_focusedDate));
+    // عدد الواجبات التي لم تُسلَّم لكل ابن (كل الأيام) — يظهر بجانب اسمه
+    int unsubmittedFor(String studentId) =>
+        assignments.where((a) => a.studentId == studentId && !isSubmittedStatus(a.status)).length;
+
+    // عناصر القائمة: عنوان لكل يوم ثم واجبات ذلك اليوم
+    final listItems = <Object>[];
+    DateTime? lastDay;
+    for (final a in filteredAssignments) {
+      final day = DateTime(a.date.year, a.date.month, a.date.day);
+      if (lastDay == null || !isSameDay(lastDay, day)) {
+        listItems.add(day);
+        lastDay = day;
+      }
+      listItems.add(a);
+    }
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -459,305 +505,299 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
             parent: AlwaysScrollableScrollPhysics(),
           ),
           slivers: [
-          AppSliverHeader(title: context.loc.schoolAssignments, showChildSwitcher: true),
+            // اختيار الابن من الشريط أدناه (مع عدد واجباته غير المسلَّمة)
+            AppSliverHeader(title: context.loc.schoolAssignments, showChildSwitcher: false),
 
-          // Custom Calendar
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.grey.withValues(alpha: 0.2),
+            if (children.isNotEmpty)
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 52,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+                    children: [
+                      for (final kid in children)
+                        _buildChildChip(
+                          name: kid.name.trim().split(RegExp(r'\s+')).first,
+                          count: unsubmittedFor(kid.id),
+                          selected: currentChild?.id == kid.id,
+                          isDark: isDark,
+                          onTap: () => ref.read(currentChildProvider.notifier).setChild(kid),
+                        ),
+                    ],
                   ),
-                  boxShadow: isDark
-                      ? null
-                      : [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.03),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                ),
-                child: Column(
-                  children: [
-                    Directionality(
-                      textDirection: TextDirection.ltr,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              size: 20,
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF062A5A),
-                            ),
-                            onPressed: () {
-                              final isAr = Localizations.localeOf(context).languageCode == 'ar';
-                              setState(() {
-                                final currentStart = _getStartOfWeek(_focusedDate);
-                                if (isAr) {
-                                  // في اللغة العربية، السير باتجاه اليسار يعني الانتقال للمستقبل (الأسبوع القادم)
-                                  _focusedDate = currentStart.add(const Duration(days: 7));
-                                } else {
-                                  // في اللغة الإنجليزية، السير باتجاه اليسار يعني الانتقال للماضي (الأسبوع السابق)
-                                  _focusedDate = currentStart.subtract(const Duration(days: 7));
-                                }
-                              });
-                            },
-                          ),
-                          Text(
-                            DateFormat('MMMM yyyy', Localizations.localeOf(context).languageCode)
-                                .format(_getStartOfWeek(_focusedDate)),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF1E293B),
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              size: 20,
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF062A5A),
-                            ),
-                            onPressed: () {
-                              final isAr = Localizations.localeOf(context).languageCode == 'ar';
-                              setState(() {
-                                final currentStart = _getStartOfWeek(_focusedDate);
-                                if (isAr) {
-                                  // في اللغة العربية، السير باتجاه اليمين يعني الانتقال للماضي (الأسبوع السابق)
-                                  _focusedDate = currentStart.subtract(const Duration(days: 7));
-                                } else {
-                                  // في اللغة الإنجليزية، السير باتجاه اليمين يعني الانتقال للمستقبل (الأسبوع القادم)
-                                  _focusedDate = currentStart.add(const Duration(days: 7));
-                                }
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: weekDays.map((day) {
-                        final isSelected = isSameDay(selectedDate, day);
-                        final isToday = isSameDay(DateTime.now(), day);
-                        final dayName = DateFormat('E', Localizations.localeOf(context).languageCode).format(day);
-                        final dayNum = day.day.toString();
-
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedDate = day;
-                              _focusedDate = day;
-                            });
-                          },
-                          child: Container(
-                            color: Colors.transparent,
-                            child: Column(
-                              children: [
-                                Text(
-                                  dayName,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark
-                                        ? Colors.white70
-                                        : Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: isSelected
-                                        ? (isDark
-                                              ? Colors.white
-                                              : const Color(0xFF062A5A))
-                                        : (isToday
-                                              ? (isDark
-                                                    ? Colors.white.withValues(
-                                                        alpha: 0.15,
-                                                      )
-                                                    : const Color(
-                                                        0xFF062A5A,
-                                                      ).withValues(alpha: 0.15))
-                                              : Colors.transparent),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      dayNum,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: isSelected || isToday
-                                            ? FontWeight.bold
-                                            : FontWeight.w500,
-                                        color: isSelected
-                                            ? (isDark
-                                                  ? const Color(0xFF0F172A)
-                                                  : Colors.white)
-                                            : (isDark
-                                                  ? Colors.white
-                                                  : Colors.black87),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
                 ),
               ),
-            ),
-          ),
 
-          // Custom Slide/Tab Selector
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-              child: Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[200],
-                  borderRadius: BorderRadius.circular(15),
-                ),
+            // التبويبان مع عدد كل منهما + زر التقويم (اختياري لعرض يوم محدد)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                 child: Row(
                   children: [
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedTab = 0),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          decoration: BoxDecoration(
-                            color: _selectedTab == 0
-                                ? (isDark ? Colors.white : const Color(0xFF062A5A))
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            isArabic ? 'الواجبات النشطة' : 'Active',
-                            style: TextStyle(
-                              color: _selectedTab == 0
-                                  ? (isDark ? const Color(0xFF0F172A) : Colors.white)
-                                  : (isDark ? Colors.white70 : Colors.black87),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                      child: Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          children: [
+                            _buildTab(
+                              0,
+                              isArabic
+                                  ? 'لم تُسلَّم بعد (${activeAssignments.length})'
+                                  : 'Not submitted (${activeAssignments.length})',
+                              isDark,
                             ),
-                          ),
+                            _buildTab(
+                              1,
+                              isArabic
+                                  ? 'تم التسليم (${completedAssignments.length})'
+                                  : 'Submitted (${completedAssignments.length})',
+                              isDark,
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedTab = 1),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          decoration: BoxDecoration(
-                            color: _selectedTab == 1
-                                ? (isDark ? Colors.white : const Color(0xFF062A5A))
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            isArabic ? 'الواجبات المكتملة' : 'Completed',
-                            style: TextStyle(
-                              color: _selectedTab == 1
-                                  ? (isDark ? const Color(0xFF0F172A) : Colors.white)
-                                  : (isDark ? Colors.white70 : Colors.black87),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: IconButton.filledTonal(
+                        tooltip: isArabic ? 'عرض يوم محدد' : 'Show a specific day',
+                        onPressed: _pickDayFilter,
+                        icon: const Icon(CupertinoIcons.calendar),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          ),
 
-          // Content Area
-          if (currentChild == null)
-            SliverFillRemaining(
-              child: Center(child: Text(context.loc.pleaseSelectStudent)),
-            )
-          else if (filteredAssignments.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      CupertinoIcons.doc_text_search,
-                      size: 64,
-                      color: isDark ? Colors.white38 : Colors.grey[400],
+            if (_dayFilter != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: InputChip(
+                      avatar: const Icon(CupertinoIcons.calendar, size: 16),
+                      label: Text(
+                        '${isArabic ? 'واجبات يوم' : 'Homework of'} ${DateFormat('EEEE d MMMM', isArabic ? 'ar' : 'en').format(_dayFilter!)}',
+                      ),
+                      onDeleted: () => setState(() => _dayFilter = null),
+                      deleteButtonTooltipMessage: isArabic ? 'كل الأيام' : 'All days',
                     ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                  ),
+                ),
+              ),
+
+            // توضيح معنى التبويبين لولي الأمر
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 6),
+                child: Row(
+                  children: [
+                    Icon(CupertinoIcons.info_circle, size: 14, color: isDark ? Colors.white54 : Colors.grey[600]),
+                    const SizedBox(width: 6),
+                    Expanded(
                       child: Text(
-                        _selectedTab == 0
-                            ? (isArabic ? 'لا توجد واجبات نشطة لهذا اليوم' : 'No active assignments for today')
-                            : (isArabic ? 'لا توجد واجبات مكتملة لهذا اليوم' : 'No completed assignments for today'),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white70 : Colors.grey[600],
-                        ),
+                        isArabic
+                            ? 'ينتقل الواجب إلى «تم التسليم» عندما يسجّل المعلم أن ابنكم سلّمه.'
+                            : 'An assignment moves to "Submitted" once the teacher records that your child handed it in.',
+                        style: TextStyle(fontSize: 12, color: isDark ? Colors.white54 : Colors.grey[600]),
                       ),
                     ),
                   ],
                 ),
               ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  return _buildAssignmentCard(
-                    assignment: filteredAssignments[index],
-                    isDark: isDark,
-                  );
-                }, childCount: filteredAssignments.length),
-              ),
             ),
-        ],
+
+            if (currentChild == null)
+              SliverFillRemaining(
+                child: Center(child: Text(context.loc.pleaseSelectStudent)),
+              )
+            else if (filteredAssignments.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        CupertinoIcons.doc_text_search,
+                        size: 64,
+                        color: isDark ? Colors.white38 : Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          _selectedTab == 0
+                              ? (isArabic ? 'لا توجد واجبات لم تُسلَّم' : 'No unsubmitted homework')
+                              : (isArabic ? 'لا توجد واجبات تم تسليمها' : 'No submitted homework'),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white70 : Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final item = listItems[index];
+                    if (item is DateTime) {
+                      return _buildDayHeader(item, isDark, isArabic);
+                    }
+                    return _buildAssignmentCard(
+                      assignment: item as Assignment,
+                      isDark: isDark,
+                    );
+                  }, childCount: listItems.length),
+                ),
+              ),
+          ],
         ),
       ),
     );
+  }
+
+  /// اسم الابن في الشريط العلوي مع عدد واجباته التي لم تُسلَّم
+  Widget _buildChildChip({
+    required String name,
+    required int count,
+    required bool selected,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    const brand = Color(0xFF062A5A);
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? brand : (isDark ? const Color(0xFF1E293B) : Colors.white),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: selected ? brand : (isDark ? Colors.white12 : Colors.grey.shade300)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                name,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: selected ? Colors.white : (isDark ? Colors.white70 : const Color(0xFF334155)),
+                ),
+              ),
+              if (count > 0) ...[
+                const SizedBox(width: 6),
+                Container(
+                  constraints: const BoxConstraints(minWidth: 18),
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDC2626),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    count > 99 ? '99+' : '$count',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTab(int index, String label, bool isDark) {
+    final selected = _selectedTab == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedTab = index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          decoration: BoxDecoration(
+            color: selected ? (isDark ? Colors.white : const Color(0xFF062A5A)) : Colors.transparent,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected
+                  ? (isDark ? const Color(0xFF0F172A) : Colors.white)
+                  : (isDark ? Colors.white70 : Colors.black87),
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// عنوان اليوم فوق واجباته: "اليوم" / "أمس" / "الأربعاء 11 نوفمبر"
+  Widget _buildDayHeader(DateTime day, bool isDark, bool isArabic) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    String label;
+    if (isSameDay(day, today)) {
+      label = isArabic ? 'اليوم' : 'Today';
+    } else if (isSameDay(day, today.subtract(const Duration(days: 1)))) {
+      label = isArabic ? 'أمس' : 'Yesterday';
+    } else {
+      label = DateFormat('EEEE d MMMM yyyy', isArabic ? 'ar' : 'en').format(day);
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 8),
+      child: Row(
+        children: [
+          Icon(CupertinoIcons.calendar_today, size: 16, color: isDark ? Colors.white60 : const Color(0xFF062A5A)),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white70 : const Color(0xFF062A5A),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// عرض واجبات يوم محدد (اختياري) — الافتراضي كل الأيام
+  Future<void> _pickDayFilter() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dayFilter ?? now,
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 1),
+      helpText: 'اختر يوم نشر الواجب',
+    );
+    if (picked != null && mounted) {
+      setState(() => _dayFilter = picked);
+    }
   }
 
   Widget _buildAssignmentCard({
@@ -768,8 +808,8 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final subTextColor = isDark ? Colors.white70 : const Color(0xFF64748B);
     final isArabic = Localizations.localeOf(context).languageCode == 'ar';
-    final isPending = assignment.status == 'pending' || assignment.status == 'not_submitted';
-    final isOverdue = isPending && assignment.dueDate.isBefore(DateTime.now());
+    final isPending = !isSubmittedStatus(assignment.status);
+    final isOverdue = isPending && isPastDueDate(assignment.dueDate);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -828,13 +868,29 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                               ),
                             ),
                           ),
-                          if (assignment.attachmentUrl != null)
+                          if (assignment.attachmentUrls.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                              child: Icon(
-                                Icons.attach_file,
-                                size: 16,
-                                color: isDark ? Colors.white60 : Colors.grey[600],
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    assignment.attachmentUrls.any(isImageAttachmentUrl)
+                                        ? Icons.photo_outlined
+                                        : Icons.attach_file,
+                                    size: 16,
+                                    color: isDark ? Colors.white60 : Colors.grey[600],
+                                  ),
+                                  if (assignment.attachmentUrls.length > 1)
+                                    Text(
+                                      '${assignment.attachmentUrls.length}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark ? Colors.white60 : Colors.grey[600],
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           Container(
@@ -914,7 +970,9 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                DateFormat('yyyy-MM-dd').format(assignment.date),
+                                assignment.isEdited
+                                    ? '${DateFormat('yyyy-MM-dd').format(assignment.date)} · ${isArabic ? 'معدَّل' : 'Edited'}'
+                                    : DateFormat('yyyy-MM-dd').format(assignment.date),
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -953,4 +1011,77 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
       ),
     );
   }
+}
+
+/// تذكير مخصص: يختار ولي الأمر يوماً (من اليوم حتى موعد التسليم) ثم وقتاً، فيُجدول تذكيراً لهذا الواجب.
+Future<void> _pickHomeworkReminder(BuildContext context, Assignment assignment, String childName) async {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final due = DateTime(assignment.dueDate.year, assignment.dueDate.month, assignment.dueDate.day);
+  if (due.isBefore(today)) return;
+
+  final existing = await HomeworkReminderService.instance.customReminderFor(assignment.id);
+  if (!context.mounted) return;
+
+  var initialDate = existing != null
+      ? DateTime(existing.year, existing.month, existing.day)
+      : due.subtract(const Duration(days: 1));
+  if (initialDate.isBefore(today)) initialDate = today;
+  if (initialDate.isAfter(due)) initialDate = due;
+
+  final date = await showDatePicker(
+    context: context,
+    initialDate: initialDate,
+    firstDate: today,
+    lastDate: due,
+    helpText: 'اختر يوم التذكير',
+  );
+  if (date == null || !context.mounted) return;
+
+  final time = await showTimePicker(
+    context: context,
+    initialTime: existing != null
+        ? TimeOfDay.fromDateTime(existing)
+        : const TimeOfDay(hour: 19, minute: 0),
+    helpText: 'اختر وقت التذكير',
+  );
+  if (time == null || !context.mounted) return;
+
+  final at = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+  final messenger = ScaffoldMessenger.of(context);
+  if (!at.isAfter(DateTime.now())) {
+    messenger.showSnackBar(
+      const SnackBar(content: Text('اختر وقتاً لاحقاً للوقت الحالي')),
+    );
+    return;
+  }
+
+  final ok = await HomeworkReminderService.instance.scheduleCustom(
+    assignment: assignment,
+    at: at,
+    childName: childName,
+  );
+  if (!context.mounted) return;
+
+  String dayLabel;
+  try {
+    dayLabel = DateFormat('EEEE d/M', 'ar').format(at);
+  } catch (_) {
+    dayLabel = DateFormat('yyyy-MM-dd').format(at);
+  }
+  final h12 = at.hour % 12 == 0 ? 12 : at.hour % 12;
+  final timeLabel = '$h12:${at.minute.toString().padLeft(2, '0')} ${at.hour < 12 ? 'ص' : 'م'}';
+
+  // نغلق نافذة التفاصيل حتى لا تحجب رسالة التأكيد
+  if (ok) Navigator.of(context).pop();
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        ok
+            ? 'سيتم تذكيرك يوم $dayLabel الساعة $timeLabel'
+            : 'تعذّرت جدولة التذكير، تأكد من السماح بالإشعارات للتطبيق',
+      ),
+      backgroundColor: ok ? null : Colors.red,
+    ),
+  );
 }

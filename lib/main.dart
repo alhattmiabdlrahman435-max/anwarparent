@@ -22,6 +22,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'core/network/pusher_service.dart';
+import 'core/services/homework_reminder_service.dart';
+import 'core/providers/homework_reminder_provider.dart';
 
 final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -42,7 +44,14 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 /// Centralized notification routing - eliminates DRY violation.
 /// Maps notification type to the correct app route.
-void _navigateByNotificationType(String type, {String? id}) {
+/// ما يُمرَّر للتنقل من بيانات الإشعار: للواجب "رقم الواجب@التاريخ"، ولغيره رقم الإشعار
+String? _targetIdFromData(Map<String, dynamic> data) {
+  final aid = data['assignment_id']?.toString();
+  if (aid != null && aid.isNotEmpty) return '$aid@${data['date'] ?? ''}';
+  return data['id']?.toString();
+}
+
+void _navigateByNotificationType(String type, {String? id, String? routeOverride}) {
   const typeToRoute = {
     'exam_schedule': '/exams',
     'exams': '/exams',
@@ -63,9 +72,19 @@ void _navigateByNotificationType(String type, {String? id}) {
     'general': '/notifications',
     'finance': '/fees',
   };
-  var route = typeToRoute[type] ?? '/notifications';
+  var route = routeOverride ?? typeToRoute[type] ?? '/notifications';
   if (route == '/notifications' && id != null && id.isNotEmpty) {
     route = '/notifications?id=' + id;
+  }
+  // إشعار واجب: يفتح صفحة الواجبات على يوم الواجب ويعرض الواجب نفسه
+  // id بصيغة "رقم الواجب@التاريخ" (من الخادم) أو رقم نسخة الطالب (من التذكير)
+  if (route == '/assignments' && id != null && id.isNotEmpty) {
+    if (id.contains('@')) {
+      final parts = id.split('@');
+      route = '/assignments?aid=${parts[0]}&date=${parts.length > 1 ? parts[1] : ''}';
+    } else {
+      route = '/assignments?id=$id';
+    }
   }
   
   void tryNavigate(int retries) {
@@ -136,6 +155,7 @@ Future<void> _setupFirebaseMessaging() async {
       settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         final payload = response.payload ?? 'notifications';
+        if (_openHomeworkReminder(response.id, payload)) return;
         if (payload.contains(':')) {
           final parts = payload.split(':');
           _navigateByNotificationType(parts[0], id: parts[1]);
@@ -144,6 +164,16 @@ Future<void> _setupFirebaseMessaging() async {
         }
       },
     );
+    HomeworkReminderService.markPluginReady();
+
+    // فتح التطبيق من إشعار تذكير واجب وهو مغلق تماماً
+    try {
+      final launch = await _flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+      final launchResponse = launch?.notificationResponse;
+      if (launch?.didNotificationLaunchApp == true && launchResponse != null) {
+        _openHomeworkReminder(launchResponse.id, launchResponse.payload ?? '');
+      }
+    } catch (_) {}
 
     await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
@@ -198,7 +228,22 @@ Future<void> _setupFirebaseMessaging() async {
     }
   } catch (e) {
     debugPrint('Error getting FCM token: $e');
+  } finally {
+    HomeworkReminderService.markPluginReady();
   }
+}
+
+/// إشعار تذكير واجب محلي (payload: `assignment:<submissionId>`) يفتح شاشة الواجبات على الواجب نفسه.
+bool _openHomeworkReminder(int? notificationId, String payload) {
+  if (!HomeworkReminderService.isReminderNotificationId(notificationId) ||
+      !payload.startsWith('assignment:')) {
+    return false;
+  }
+  final submissionId = payload.substring('assignment:'.length);
+  HomeworkReminderService.routeForSubmission(submissionId).then((route) {
+    _navigateByNotificationType('assignment', routeOverride: route);
+  });
+  return true;
 }
 
 class ParentApp extends ConsumerStatefulWidget {
@@ -214,6 +259,8 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _listenToFcmForDataRefresh();
+    // جدولة تذكيرات الواجبات غير المسلَّمة محلياً كلما تغيّرت الواجبات أو الإعدادات
+    ref.listenManual(homeworkReminderSyncProvider, (_, _) {}, fireImmediately: true);
     // Fetch initial data immediately on launch
     Future.microtask(() => _refreshAllData());
 
@@ -224,8 +271,7 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
         // Wait a short moment for the router to be fully ready
         Future.delayed(const Duration(milliseconds: 500), () {
           final type = initialMessage.data['type'] ?? 'notifications';
-          final notifId = initialMessage.data['id']?.toString();
-          _navigateByNotificationType(type, id: notifId);
+          _navigateByNotificationType(type, id: _targetIdFromData(initialMessage.data));
         });
       }
     });
@@ -270,8 +316,10 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
 
   /// Centralized data refresh handler for notification types.
   void _refreshProviderByType(String type) {
-    // Always invalidate the notifications list so the UI updates in real-time
-    ref.invalidate(notificationsProvider);
+    // Always re-fetch the notifications list so the UI updates in real-time
+    // (invalidate alone returns the cached list for the same parent, so
+    //  edits/deletions from the dashboard would not appear)
+    ref.read(notificationsProvider.notifier).refresh();
 
     switch (type) {
       case 'attendance':
@@ -281,7 +329,8 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
         break;
       case 'assignment':
       case 'assignments':
-        ref.invalidate(assignmentsProvider);
+        // invalidate وحده يُرجع القائمة المخزنة لنفس ولي الأمر؛ نعيد الجلب فعلياً
+        ref.read(assignmentsProvider.notifier).refresh();
         break;
       case 'grade':
       case 'grades':
@@ -337,7 +386,9 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
               presentSound: true,
             ),
           ),
-          payload: (message.data['id'] != null) ? '${type}:${message.data['id']}' : (type.isEmpty ? 'notifications' : type),
+          payload: (_targetIdFromData(message.data) != null)
+              ? '$type:${_targetIdFromData(message.data)}'
+              : (type.isEmpty ? 'notifications' : type),
         );
       }
     });
@@ -347,7 +398,7 @@ class _ParentAppState extends ConsumerState<ParentApp> with WidgetsBindingObserv
       final type = message.data['type'] ?? '';
       _refreshProviderByType(type);
       // Ensure we navigate to the correct screen
-      final notifId = message.data['id']?.toString();
+      final notifId = _targetIdFromData(message.data);
       Future.microtask(() {
         _navigateByNotificationType(type.isEmpty ? 'notifications' : type, id: notifId);
       });

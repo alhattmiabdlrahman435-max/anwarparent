@@ -40,6 +40,10 @@ class PusherService {
 
     _client?.onConnectionEstablished.listen((_) {
       debugPrint("⚡ [PusherService] Connection established successfully!");
+      // يجب الاشتراك في القنوات بعد كل اتصال (وإعادة اتصال)، وإلا لا تصل أي أحداث
+      for (final channel in _activeChannels.values) {
+        channel.subscribeIfNotUnsubscribed();
+      }
     });
 
     _initialized = true;
@@ -71,9 +75,11 @@ class PusherService {
     if (!_initialized) init();
 
     try {
-      final channel = _client?.publicChannel(channelName);
+      final channel = _activeChannels[channelName] ?? _client?.publicChannel(channelName);
       if (channel != null) {
         _activeChannels[channelName] = channel;
+        // إذا كان الاتصال قائماً نشترك فوراً، وإلا يتم الاشتراك عند onConnectionEstablished
+        channel.subscribeIfNotUnsubscribed();
 
         channel.bind(eventName).listen((event) {
           debugPrint("⚡ [PusherService] Received event '$eventName' on '$channelName': ${event.data}");

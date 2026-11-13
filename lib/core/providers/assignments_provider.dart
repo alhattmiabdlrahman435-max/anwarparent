@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/assignment.dart';
 import '../network/api_client.dart';
+import '../network/pusher_service.dart';
 import 'parent_provider.dart';
 
 part 'assignments_provider.g.dart';
@@ -18,11 +19,32 @@ class Assignments extends _$Assignments {
       return [];
     }
     if (_loadedParentId == parent.id) {
-      return state;
+      return _currentOrEmpty();
     }
     _loadedParentId = parent.id;
+    _listenToRealtimeChanges();
     Future.microtask(() => _loadFromBackend());
-    return state;
+    return _currentOrEmpty();
+  }
+
+  bool _realtimeSubscribed = false;
+
+  /// WebSocket (Reverb): عند إضافة المعلم واجباً أو تعديله أو حذفه تتحدث القائمة في نفس اللحظة
+  void _listenToRealtimeChanges() {
+    if (_realtimeSubscribed) return;
+    _realtimeSubscribed = true;
+    PusherService().subscribe('public-assignments', 'assignments_changed', (_) {
+      if (ref.mounted && _loadedParentId != null) _loadFromBackend();
+    });
+  }
+
+  /// قراءة الحالة الحالية بأمان: في أول بناء لا توجد حالة بعد، وقراءتها كانت تُسقط شاشة الواجبات
+  List<Assignment> _currentOrEmpty() {
+    try {
+      return state;
+    } catch (_) {
+      return const [];
+    }
   }
 
   Future<void> _loadFromBackend() async {
@@ -36,7 +58,8 @@ class Assignments extends _$Assignments {
 
     try {
       final dio = ref.read(apiClientProvider);
-      final response = await dio.get('assignments');
+      // الخادم يُرجع 20 فقط افتراضياً؛ نطلب عدداً كافياً لكل الأبناء
+      final response = await dio.get('assignments', queryParameters: {'per_page': 500});
 
       if (response.data != null && response.data['success'] == true) {
         final List<dynamic> list = response.data['assignments'] ?? [];
@@ -45,6 +68,20 @@ class Assignments extends _$Assignments {
         for (final item in list) {
           final subject = item['subject'];
           final subjectName = subject != null ? (subject['name_ar'] ?? '') : '';
+
+          // مرفقات متعددة (attachment_urls) مع الرجوع للحقل القديم attachment_url
+          final List<String> attachmentUrls = [];
+          final rawUrls = item['attachment_urls'];
+          if (rawUrls is List) {
+            for (final u in rawUrls) {
+              final s = u?.toString().trim() ?? '';
+              if (s.isNotEmpty) attachmentUrls.add(s);
+            }
+          }
+          if (attachmentUrls.isEmpty) {
+            final legacy = item['attachment_url']?.toString().trim() ?? '';
+            if (legacy.isNotEmpty) attachmentUrls.add(legacy);
+          }
           
           final List<dynamic> submissions = item['submissions'] ?? [];
           for (final sub in submissions) {
@@ -55,7 +92,8 @@ class Assignments extends _$Assignments {
             
             DateTime publishDate;
             try {
-              publishDate = DateTime.parse(item['created_at'] ?? item['date_created'] ?? DateTime.now().toString());
+              // created_at يصل بتوقيت UTC؛ نحوّله للتوقيت المحلي حتى يظهر الواجب في يومه الصحيح
+              publishDate = DateTime.parse(item['created_at'] ?? item['date_created'] ?? DateTime.now().toString()).toLocal();
             } catch (_) {
               publishDate = DateTime.now();
             }
@@ -70,15 +108,17 @@ class Assignments extends _$Assignments {
             parsed.add(
               Assignment(
                 id: subId, // Use submission ID as unique identifier for this student's assignment copy
+                assignmentId: item['id']?.toString() ?? '',
                 studentId: studentId,
                 subjectName: subjectName,
                 title: item['title'] ?? '',
                 content: item['content'] ?? '',
                 date: publishDate,
                 dueDate: dueDate,
-                attachmentUrl: item['attachment_url'],
+                attachmentUrls: attachmentUrls,
                 status: status,
                 teacherNote: teacherNote,
+                editedAt: DateTime.tryParse(item['edited_at']?.toString() ?? '')?.toLocal(),
               ),
             );
           }

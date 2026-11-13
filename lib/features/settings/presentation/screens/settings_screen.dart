@@ -17,6 +17,7 @@ import 'help_center_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../profile/presentation/screens/change_password_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/providers/homework_reminder_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -178,6 +179,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 24),
 
+                  // Homework reminders section
+                  const _SectionHeader(title: 'تذكير الواجبات'),
+                  const SizedBox(height: 16),
+                  const _HomeworkReminderCard(),
+                  const SizedBox(height: 24),
+
                   // Support Section
                   _SectionHeader(title: context.loc.support),
                   const SizedBox(height: 16),
@@ -309,6 +316,132 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// قسم "تذكير الواجبات": تفعيل التذكير، ومتى قبل الموعد، ووقت التذكير
+class _HomeworkReminderCard extends ConsumerWidget {
+  const _HomeworkReminderCard();
+
+  static String leadLabel(ReminderLead lead) {
+    switch (lead) {
+      case ReminderLead.oneDay:
+        return 'يوم واحد';
+      case ReminderLead.twoDays:
+        return 'يومين';
+      case ReminderLead.threeDays:
+        return '3 أيام';
+      case ReminderLead.dueDayMorning:
+        return 'في يوم التسليم صباحاً';
+    }
+  }
+
+  static String timeLabel(int hour, int minute) {
+    final h12 = hour % 12 == 0 ? 12 : hour % 12;
+    final period = hour < 12 ? 'ص' : 'م';
+    return '$h12:${minute.toString().padLeft(2, '0')} $period';
+  }
+
+  Future<void> _pickLead(BuildContext context, WidgetRef ref, ReminderLead current) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final picked = await showModalBottomSheet<ReminderLead>(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  'ذكّرني قبل موعد التسليم بـ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              for (final lead in ReminderLead.values)
+                ListTile(
+                  title: Text(leadLabel(lead)),
+                  trailing: lead == current
+                      ? const Icon(Icons.check_circle, color: AppColors.primary)
+                      : null,
+                  onTap: () => Navigator.pop(ctx, lead),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (picked != null) {
+      await ref.read(homeworkReminderSettingsProvider.notifier).setLead(picked);
+    }
+  }
+
+  Future<void> _pickTime(BuildContext context, WidgetRef ref, HomeworkReminderSettings s) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: s.hour, minute: s.minute),
+      helpText: 'وقت التذكير',
+    );
+    if (picked != null) {
+      await ref.read(homeworkReminderSettingsProvider.notifier).setTime(picked.hour, picked.minute);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(homeworkReminderSettingsProvider);
+    final notifier = ref.read(homeworkReminderSettingsProvider.notifier);
+    final morning = s.lead == ReminderLead.dueDayMorning;
+
+    return _SettingsCard(
+      children: [
+        _SettingsTile(
+          icon: PhosphorIcons.alarm(PhosphorIconsStyle.duotone),
+          title: 'تذكيري بالواجبات غير المسلَّمة',
+          subtitle: 'تنبيه على هذا الجهاز قبل موعد التسليم',
+          trailing: Switch.adaptive(
+            value: s.enabled,
+            activeTrackColor: AppColors.primary,
+            onChanged: (v) => notifier.setEnabled(v),
+          ),
+        ),
+        _Divider(),
+        Opacity(
+          opacity: s.enabled ? 1 : 0.45,
+          child: IgnorePointer(
+            ignoring: !s.enabled,
+            child: Column(
+              children: [
+                _SettingsTile(
+                  icon: PhosphorIcons.calendarBlank(PhosphorIconsStyle.duotone),
+                  title: 'قبل الموعد بـ',
+                  subtitle: leadLabel(s.lead),
+                  onTap: () => _pickLead(context, ref, s.lead),
+                ),
+                _Divider(),
+                _SettingsTile(
+                  icon: PhosphorIcons.clock(PhosphorIconsStyle.duotone),
+                  title: 'وقت التذكير',
+                  subtitle: morning
+                      ? '${timeLabel(7, 0)} صباح يوم التسليم'
+                      : timeLabel(s.hour, s.minute),
+                  onTap: morning ? null : () => _pickTime(context, ref, s),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
